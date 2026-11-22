@@ -24,7 +24,7 @@ export class CourseService {
 
   createCourse(payload: CoursePayload): Observable<Course> {
     return this.http.post<Course>(`${this.apiUrl}/courses`, payload).pipe(
-      tap((course) => this.coursesSubject.next([...this.coursesSubject.value, course])),
+      tap((course) => this.coursesSubject.next([course, ...this.coursesSubject.value])),
       catchError((error) => throwError(() => error)),
     );
   }

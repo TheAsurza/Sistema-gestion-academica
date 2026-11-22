@@ -15,7 +15,7 @@ Aplicación web **SPA (Single Page Application)** desarrollada con **Angular 22 
 
 - **Node.js** (v20+ recomendado) y **npm**
 - **Angular CLI** (`@angular/cli` v22+)
-- **PHP 8.0+** con extensión `pdo_mysql` habilitada
+- **PHP 8.1+** con extensión `pdo_mysql` habilitada
 - **MySQL 8+ / MariaDB** (o paquete **XAMPP** / Laragon)
 
 ---

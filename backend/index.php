@@ -748,5 +748,8 @@ function handleGetReportsSummary(PDO $pdo): never
         'users_by_role'     => $usersByRole,
         'courses_by_status' => $coursesByStatus,
         'enrollments'       => $enrollments,
+        'total_users'       => $usersByRole['total'],
+        'total_courses'     => $coursesByStatus['total'],
+        'total_enrollments' => $enrollments['total'],
     ]);
 }

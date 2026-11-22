@@ -1,5 +1,4 @@
 import { DatePipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -142,6 +141,7 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
                     <button
                       mat-icon-button
                       color="warn"
+                      class="delete-action-btn"
                       type="button"
                       [disabled]="isCurrentUser(user)"
                       [matTooltip]="
@@ -259,6 +259,10 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
         white-space: nowrap;
       }
 
+      .delete-action-btn:not(:disabled) {
+        color: var(--mat-sys-error);
+      }
+
       .loading-state,
       .empty-state {
         display: flex;
@@ -311,9 +315,6 @@ export class UserListComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('No se pudo cargar la lista de usuarios.', 'Cerrar', {
-          duration: 4000,
-        });
       },
     });
   }
@@ -336,15 +337,11 @@ export class UserListComponent implements OnInit {
       )
       .subscribe({
         next: (created) => {
-          this.users.update((list) => [...list, created]);
+          this.users.update((list) => [created, ...list]);
           this.snackBar.open('Usuario creado correctamente.', 'Cerrar', { duration: 3000 });
         },
-        error: (err: HttpErrorResponse) => {
-          const message =
-            err.status === 409
-              ? 'El correo electrónico ya está registrado.'
-              : 'No se pudo crear el usuario.';
-          this.snackBar.open(message, 'Cerrar', { duration: 4000 });
+        error: () => {
+          // errorInterceptor ya muestra el mensaje de error del backend
         },
       });
   }
@@ -370,12 +367,8 @@ export class UserListComponent implements OnInit {
             duration: 3000,
           });
         },
-        error: (err: HttpErrorResponse) => {
-          const message =
-            err.status === 409
-              ? 'El correo electrónico ya está en uso por otro usuario.'
-              : 'No se pudo actualizar el usuario.';
-          this.snackBar.open(message, 'Cerrar', { duration: 4000 });
+        error: () => {
+          // errorInterceptor ya muestra el mensaje de error del backend
         },
       });
   }
@@ -408,17 +401,8 @@ export class UserListComponent implements OnInit {
           this.users.update((list) => list.filter((item) => item.id !== user.id));
           this.snackBar.open('Usuario eliminado.', 'Cerrar', { duration: 3000 });
         },
-        error: (err: HttpErrorResponse) => {
-          const backendMsg =
-            typeof err.error === 'object' && err.error !== null && 'message' in err.error
-              ? String((err.error as { message?: unknown }).message ?? '')
-              : '';
-          const message =
-            err.status === 409
-              ? backendMsg ||
-                'No se puede eliminar este usuario porque tiene registros asociados o es tu cuenta actual.'
-              : backendMsg || 'No se pudo eliminar el usuario.';
-          this.snackBar.open(message, 'Cerrar', { duration: 4500 });
+        error: () => {
+          // errorInterceptor ya muestra el mensaje de error del backend
         },
       });
   }

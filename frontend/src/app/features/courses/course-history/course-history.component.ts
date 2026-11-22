@@ -84,16 +84,16 @@ import { CourseService } from '../../../core/services/course.service';
                   <td mat-cell *matCellDef="let item">{{ item.cycle }}</td>
                 </ng-container>
 
-                <ng-container matColumnDef="code">
+                <ng-container matColumnDef="course_code">
                   <th mat-header-cell *matHeaderCellDef>Código</th>
                   <td mat-cell *matCellDef="let item">
-                    <strong>{{ item.code }}</strong>
+                    <strong>{{ item.course_code }}</strong>
                   </td>
                 </ng-container>
 
-                <ng-container matColumnDef="title">
+                <ng-container matColumnDef="course_title">
                   <th mat-header-cell *matHeaderCellDef>Curso</th>
-                  <td mat-cell *matCellDef="let item">{{ item.title }}</td>
+                  <td mat-cell *matCellDef="let item">{{ item.course_title }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="credits">
@@ -244,7 +244,14 @@ import { CourseService } from '../../../core/services/course.service';
 export class CourseHistoryComponent implements OnInit {
   private readonly courseService = inject(CourseService);
 
-  readonly displayedColumns = ['cycle', 'code', 'title', 'credits', 'final_grade', 'result'];
+  readonly displayedColumns = [
+    'cycle',
+    'course_code',
+    'course_title',
+    'credits',
+    'final_grade',
+    'result',
+  ];
   readonly history = signal<EnrollmentHistory[]>([]);
   readonly loading = signal(true);
 

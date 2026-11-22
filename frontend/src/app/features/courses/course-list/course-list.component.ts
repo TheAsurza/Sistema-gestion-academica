@@ -256,6 +256,7 @@ export class CourseDetailDialogComponent {
                       *appHasRole="['admin']"
                       mat-icon-button
                       color="warn"
+                      class="delete-action-btn"
                       type="button"
                       matTooltip="Eliminar"
                       (click)="confirmDelete(course)"
@@ -343,6 +344,10 @@ export class CourseDetailDialogComponent {
         white-space: nowrap;
       }
 
+      .delete-action-btn:not(:disabled) {
+        color: var(--mat-sys-error);
+      }
+
       .loading-state,
       .empty-state {
         display: flex;
@@ -425,8 +430,11 @@ export class CourseListComponent implements OnInit {
       )
       .subscribe({
         next: (created) => {
-          this.courses.update((list) => [...list, created]);
+          this.courses.update((list) => [created, ...list]);
           this.snackBar.open('Curso creado correctamente.', 'Cerrar', { duration: 3000 });
+        },
+        error: () => {
+          // errorInterceptor ya notifica el error HTTP al usuario
         },
       });
   }
@@ -449,6 +457,9 @@ export class CourseListComponent implements OnInit {
             list.map((item) => (item.id === updated.id ? updated : item)),
           );
           this.snackBar.open('Curso actualizado correctamente.', 'Cerrar', { duration: 3000 });
+        },
+        error: () => {
+          // errorInterceptor ya notifica el error HTTP al usuario
         },
       });
   }
@@ -473,6 +484,9 @@ export class CourseListComponent implements OnInit {
         next: () => {
           this.courses.update((list) => list.filter((item) => item.id !== course.id));
           this.snackBar.open('Curso eliminado.', 'Cerrar', { duration: 3000 });
+        },
+        error: () => {
+          // errorInterceptor ya notifica el error HTTP al usuario
         },
       });
   }

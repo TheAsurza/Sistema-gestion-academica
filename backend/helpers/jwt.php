@@ -76,7 +76,7 @@ function jwtDecode(string $token, string $secret): ?array
         return null;
     }
 
-    if (isset($payload['exp']) && time() >= (int) $payload['exp']) {
+    if (!isset($payload['exp']) || !is_numeric($payload['exp']) || time() >= (int) $payload['exp']) {
         return null;
     }
 

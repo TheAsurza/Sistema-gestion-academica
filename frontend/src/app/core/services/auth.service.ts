@@ -36,10 +36,14 @@ export class AuthService {
   }
 
   logout(): void {
+    this.clearSession();
+    void this.router.navigate(['/login']);
+  }
+
+  clearSession(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this.currentUserSubject.next(null);
-    void this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
@@ -48,7 +52,13 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     const token = this.getToken();
-    return !!token && !this.isTokenExpired(token);
+    if (!token || this.isTokenExpired(token)) {
+      if (token || localStorage.getItem(USER_KEY)) {
+        this.clearSession();
+      }
+      return false;
+    }
+    return true;
   }
 
   isTokenExpired(token: string): boolean {

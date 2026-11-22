@@ -23,7 +23,7 @@ export class UserService {
 
   createUser(payload: UserPayload): Observable<User> {
     return this.http.post<User>(`${this.apiUrl}/users`, payload).pipe(
-      tap((user) => this.usersSubject.next([...this.usersSubject.value, user])),
+      tap((user) => this.usersSubject.next([user, ...this.usersSubject.value])),
       catchError((error) => throwError(() => error)),
     );
   }

@@ -19,11 +19,19 @@ export interface ConfirmDialogData {
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-      <button mat-flat-button color="warn" type="button" (click)="onConfirm()">
+      <button mat-flat-button color="warn" class="confirm-warn-btn" type="button" (click)="onConfirm()">
         {{ data.confirmText || 'Confirmar' }}
       </button>
     </mat-dialog-actions>
   `,
+  styles: [
+    `
+      .confirm-warn-btn {
+        background-color: var(--mat-sys-error);
+        color: var(--mat-sys-on-error);
+      }
+    `,
+  ],
 })
 export class ConfirmDialogComponent {
   readonly data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);

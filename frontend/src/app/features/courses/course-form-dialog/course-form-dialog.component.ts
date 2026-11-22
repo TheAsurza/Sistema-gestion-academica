@@ -296,6 +296,9 @@ export class CourseFormDialogComponent implements OnInit {
         next: (users) => {
           this.teachers.set(users.filter((user) => user.role === 'profesor'));
         },
+        error: () => {
+          this.teachers.set([]);
+        },
       });
     }
   }

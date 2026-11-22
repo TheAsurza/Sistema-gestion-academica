@@ -16,9 +16,9 @@ interface DemoCredential {
 }
 
 const DEMO_CREDENTIALS: DemoCredential[] = [
-  { label: 'Admin', email: 'admin@zegel.edu.pe', password: 'Zegel2026!' },
-  { label: 'Profesor', email: 'profesor@zegel.edu.pe', password: 'Zegel2026!' },
-  { label: 'Estudiante', email: 'estudiante@zegel.edu.pe', password: 'Zegel2026!' },
+  { label: 'Admin', email: 'admin@zegel.edu.pe', password: 'password' },
+  { label: 'Profesor', email: 'carlos.mendoza@zegel.edu.pe', password: 'password' },
+  { label: 'Estudiante', email: 'anthony.quispe@zegel.edu.pe', password: 'password' },
 ];
 
 @Component({
@@ -268,13 +268,16 @@ export class LoginComponent {
         this.loading.set(false);
         void this.router.navigate(['/dashboard']);
       },
-      error: (err: { status?: number; error?: { message?: string } }) => {
+      error: (err: { status?: number; error?: { error?: string; message?: string } }) => {
         this.loading.set(false);
+        const backendMessage = err.error?.error ?? err.error?.message;
         if (err.status === 401) {
-          this.errorMessage.set('Credenciales incorrectas. Verifica tu correo y contraseña.');
+          this.errorMessage.set(
+            backendMessage ?? 'Credenciales incorrectas. Verifica tu correo y contraseña.',
+          );
         } else {
           this.errorMessage.set(
-            err.error?.message ?? 'No se pudo iniciar sesión. Intenta nuevamente.',
+            backendMessage ?? 'No se pudo iniciar sesión. Intenta nuevamente.',
           );
         }
       },

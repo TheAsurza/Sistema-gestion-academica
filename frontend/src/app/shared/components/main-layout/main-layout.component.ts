@@ -169,6 +169,13 @@ const MENU_ITEMS: NavMenuItem[] = [
         position: sticky;
         top: 0;
         z-index: 10;
+        background-color: var(--mat-sys-primary);
+        color: var(--mat-sys-on-primary);
+      }
+
+      .layout-toolbar button[mat-icon-button],
+      .layout-toolbar .logout-btn {
+        color: var(--mat-sys-on-primary);
       }
 
       .toolbar-spacer {
@@ -195,7 +202,6 @@ const MENU_ITEMS: NavMenuItem[] = [
       }
 
       .logout-btn {
-        color: inherit;
         border-color: rgba(255, 255, 255, 0.5);
       }
 
