@@ -1,5 +1,24 @@
 @import '@angular/material/prebuilt-themes/azure-blue.css';
 
+:root {
+  --zegel-primary: #2563eb;
+  --zegel-primary-dark: #1d4ed8;
+  --zegel-primary-soft: #eff6ff;
+  --zegel-accent: #ea580c;
+  --zegel-bg: #f8fafc;
+  --zegel-surface: #ffffff;
+  --zegel-text: #0f172a;
+  --zegel-muted: #64748b;
+  --zegel-border: #e2e8f0;
+  --zegel-success: #059669;
+  --zegel-success-soft: #ecfdf5;
+  --zegel-warning: #d97706;
+  --zegel-warning-soft: #fffbeb;
+  --zegel-error: #dc2626;
+  --zegel-error-soft: #fef2f2;
+  --zegel-radius: 14px;
+}
+
 html,
 body {
   height: 100%;
@@ -7,5 +26,58 @@ body {
 
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: 'Plus Jakarta Sans', Roboto, 'Helvetica Neue', sans-serif;
+  background-color: var(--zegel-bg);
+  color: var(--zegel-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.mat-mdc-card {
+  background-color: var(--zegel-surface) !important;
+  border: 1px solid var(--zegel-border);
+  border-radius: var(--zegel-radius) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+}
+
+.mat-mdc-table {
+  background: transparent !important;
+}
+
+.mat-mdc-header-row {
+  background-color: #f8fafc !important;
+}
+
+.mat-mdc-header-cell {
+  color: var(--zegel-muted) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom-color: var(--zegel-border) !important;
+}
+
+.mat-mdc-row {
+  transition: background-color 150ms ease;
+}
+
+.mat-mdc-row:hover {
+  background-color: #f8fafc;
+}
+
+.mat-mdc-cell {
+  border-bottom-color: var(--zegel-border) !important;
+  color: var(--zegel-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

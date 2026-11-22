@@ -176,6 +176,19 @@ export class CourseDetailDialogComponent {
                 </button>
               }
             </mat-form-field>
+
+            <div class="filter-pills" role="group" aria-label="Filtrar por estado">
+              @for (opt of statusFilterOptions; track opt.value) {
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="statusFilter() === opt.value"
+                  (click)="statusFilter.set(opt.value)"
+                >
+                  {{ opt.label }}
+                </button>
+              }
+            </div>
           </div>
 
           @if (loading()) {
@@ -294,13 +307,13 @@ export class CourseDetailDialogComponent {
       .page-header h1 {
         margin: 0;
         font-size: 24px;
-        font-weight: 600;
-        color: #1a237e;
+        font-weight: 700;
+        color: var(--zegel-text);
       }
 
       .subtitle {
         margin: 4px 0 0;
-        color: #616161;
+        color: var(--zegel-muted);
         font-size: 14px;
       }
 
@@ -315,21 +328,50 @@ export class CourseDetailDialogComponent {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-      }
-
-      .table-card {
-        border-radius: 12px;
+        border-radius: 10px !important;
       }
 
       .toolbar-row {
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
       }
 
       .search-field {
         width: 100%;
-        max-width: 380px;
+        max-width: 360px;
+      }
+
+      .filter-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .filter-pill {
+        border: 1px solid var(--zegel-border);
+        background: var(--zegel-surface);
+        color: var(--zegel-muted);
+        border-radius: 9999px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 150ms ease;
+      }
+
+      .filter-pill:hover {
+        background: #f1f5f9;
+        color: var(--zegel-text);
+      }
+
+      .filter-pill.active {
+        background: var(--zegel-primary-soft);
+        color: var(--zegel-primary-dark);
+        border-color: #bfdbfe;
       }
 
       .table-wrapper {
@@ -379,17 +421,29 @@ export class CourseListComponent implements OnInit {
   readonly courses = signal<Course[]>([]);
   readonly loading = signal(true);
   readonly searchTerm = signal('');
+  readonly statusFilter = signal<'all' | 'active' | 'draft' | 'inactive'>('all');
+
+  readonly statusFilterOptions: Array<{
+    value: 'all' | 'active' | 'draft' | 'inactive';
+    label: string;
+  }> = [
+    { value: 'all', label: 'Todos' },
+    { value: 'active', label: 'Activos' },
+    { value: 'draft', label: 'Borradores' },
+    { value: 'inactive', label: 'Inactivos' },
+  ];
 
   readonly filteredCourses = computed(() => {
     const query = this.searchTerm().trim().toLowerCase();
-    if (!query) {
-      return this.courses();
-    }
-    return this.courses().filter(
-      (course) =>
+    const status = this.statusFilter();
+    return this.courses().filter((course) => {
+      const matchesStatus = status === 'all' || course.status === status;
+      const matchesQuery =
+        !query ||
         course.code.toLowerCase().includes(query) ||
-        course.title.toLowerCase().includes(query),
-    );
+        course.title.toLowerCase().includes(query);
+      return matchesStatus && matchesQuery;
+    });
   });
 
   ngOnInit(): void {

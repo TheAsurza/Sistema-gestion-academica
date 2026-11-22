@@ -73,6 +73,19 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
                 </button>
               }
             </mat-form-field>
+
+            <div class="filter-pills" role="group" aria-label="Filtrar por rol">
+              @for (opt of roleFilterOptions; track opt.value) {
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="roleFilter() === opt.value"
+                  (click)="roleFilter.set(opt.value)"
+                >
+                  {{ opt.label }}
+                </button>
+              }
+            </div>
           </div>
 
           @if (loading()) {
@@ -185,29 +198,57 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
       .page-header h1 {
         margin: 0;
         font-size: 24px;
-        font-weight: 600;
-        color: #1a237e;
+        font-weight: 700;
+        color: var(--zegel-text);
       }
 
       .subtitle {
         margin: 4px 0 0;
-        color: #616161;
+        color: var(--zegel-muted);
         font-size: 14px;
-      }
-
-      .table-card {
-        border-radius: 12px;
       }
 
       .toolbar-row {
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
       }
 
       .search-field {
         width: 100%;
-        max-width: 380px;
+        max-width: 360px;
+      }
+
+      .filter-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .filter-pill {
+        border: 1px solid var(--zegel-border);
+        background: var(--zegel-surface);
+        color: var(--zegel-muted);
+        border-radius: 9999px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 150ms ease;
+      }
+
+      .filter-pill:hover {
+        background: #f1f5f9;
+        color: var(--zegel-text);
+      }
+
+      .filter-pill.active {
+        background: var(--zegel-primary-soft);
+        color: var(--zegel-primary-dark);
+        border-color: #bfdbfe;
       }
 
       .table-wrapper {
@@ -287,19 +328,31 @@ export class UserListComponent implements OnInit {
   readonly users = signal<User[]>([]);
   readonly loading = signal(true);
   readonly searchTerm = signal('');
+  readonly roleFilter = signal<'all' | 'admin' | 'profesor' | 'estudiante'>('all');
   private readonly currentUserId = this.authService.getCurrentUser()?.id ?? null;
+
+  readonly roleFilterOptions: Array<{
+    value: 'all' | 'admin' | 'profesor' | 'estudiante';
+    label: string;
+  }> = [
+    { value: 'all', label: 'Todos' },
+    { value: 'admin', label: 'Administradores' },
+    { value: 'profesor', label: 'Profesores' },
+    { value: 'estudiante', label: 'Estudiantes' },
+  ];
 
   readonly filteredUsers = computed(() => {
     const query = this.searchTerm().trim().toLowerCase();
-    if (!query) {
-      return this.users();
-    }
-    return this.users().filter(
-      (user) =>
+    const role = this.roleFilter();
+    return this.users().filter((user) => {
+      const matchesRole = role === 'all' || user.role === role;
+      const matchesQuery =
+        !query ||
         user.name.toLowerCase().includes(query) ||
         user.email.toLowerCase().includes(query) ||
-        user.role.toLowerCase().includes(query),
-    );
+        user.role.toLowerCase().includes(query);
+      return matchesRole && matchesQuery;
+    });
   });
 
   ngOnInit(): void {

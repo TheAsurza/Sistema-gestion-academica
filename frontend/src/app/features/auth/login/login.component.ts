@@ -11,14 +11,15 @@ import { AuthService } from '../../../core/services/auth.service';
 
 interface DemoCredential {
   label: string;
+  icon: string;
   email: string;
   password: string;
 }
 
 const DEMO_CREDENTIALS: DemoCredential[] = [
-  { label: 'Admin', email: 'admin@zegel.edu.pe', password: 'password' },
-  { label: 'Profesor', email: 'carlos.mendoza@zegel.edu.pe', password: 'password' },
-  { label: 'Estudiante', email: 'anthony.quispe@zegel.edu.pe', password: 'password' },
+  { label: 'Admin', icon: 'admin_panel_settings', email: 'admin@zegel.edu.pe', password: 'password' },
+  { label: 'Profesor', icon: 'co_present', email: 'carlos.mendoza@zegel.edu.pe', password: 'password' },
+  { label: 'Estudiante', icon: 'school', email: 'anthony.quispe@zegel.edu.pe', password: 'password' },
 ];
 
 @Component({
@@ -34,17 +35,57 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
     MatProgressSpinnerModule,
   ],
   template: `
-    <div class="login-page">
-      <mat-card class="login-card">
-        <mat-card-header class="login-header">
-          <div class="brand-badge">
-            <mat-icon>school</mat-icon>
+    <div class="login-shell">
+      <section class="hero-panel">
+        <div class="hero-content">
+          <div class="hero-brand">
+            <div class="hero-logo">
+              <mat-icon>school</mat-icon>
+            </div>
+            <div>
+              <span class="hero-kicker">Zegel · Escuela de Tecnología</span>
+              <h1>Zegel LMS</h1>
+            </div>
           </div>
-          <mat-card-title>Zegel LMS</mat-card-title>
-          <mat-card-subtitle>Plataforma de Gestión Académica</mat-card-subtitle>
-        </mat-card-header>
 
-        <mat-card-content>
+          <p class="hero-lead">
+            Plataforma centralizada para la gestión académica de cursos, usuarios y seguimiento de notas con acceso seguro por roles.
+          </p>
+
+          <div class="hero-highlights">
+            <div class="highlight-card">
+              <mat-icon>admin_panel_settings</mat-icon>
+              <div>
+                <strong>Administrador</strong>
+                <span>CRUD completo de cursos, usuarios y reportes</span>
+              </div>
+            </div>
+            <div class="highlight-card">
+              <mat-icon>co_present</mat-icon>
+              <div>
+                <strong>Profesor</strong>
+                <span>Gestión de temarios en sus cursos asignados</span>
+              </div>
+            </div>
+            <div class="highlight-card">
+              <mat-icon>school</mat-icon>
+              <div>
+                <strong>Estudiante</strong>
+                <span>Cursos activos e historial académico por ciclo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-panel">
+        <mat-card class="login-card">
+          <div class="card-top">
+            <span class="welcome-pill">Acceso JWT Seguro</span>
+            <h2>Iniciar sesión</h2>
+            <p>Ingresa tus credenciales institucionales para continuar.</p>
+          </div>
+
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Correo electrónico</mat-label>
@@ -106,71 +147,180 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
                 <mat-spinner diameter="20"></mat-spinner>
                 <span>Ingresando...</span>
               } @else {
-                <span>Iniciar sesión</span>
+                <span>Ingresar al sistema</span>
+                <mat-icon>arrow_forward</mat-icon>
               }
             </button>
           </form>
 
           <div class="demo-section">
-            <span class="demo-title">Accesos rápidos de demostración:</span>
+            <span class="demo-title">Accesos rápidos de demostración</span>
             <div class="demo-buttons">
               @for (cred of demoCredentials; track cred.email) {
                 <button
                   mat-stroked-button
                   type="button"
+                  class="demo-chip"
                   (click)="fillCredentials(cred)"
                   [disabled]="loading()"
                 >
-                  {{ cred.label }}
+                  <mat-icon>{{ cred.icon }}</mat-icon>
+                  <span>{{ cred.label }}</span>
                 </button>
               }
             </div>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </mat-card>
+      </section>
     </div>
   `,
   styles: [
     `
-      .login-page {
+      .login-shell {
         min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        background: var(--zegel-bg);
+      }
+
+      .hero-panel {
+        background: radial-gradient(circle at top right, #3b82f6 0%, #1d4ed8 45%, #0f172a 100%);
+        color: #ffffff;
+        padding: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 24px;
-        background: linear-gradient(135deg, #e3f2fd 0%, #f5f7fa 100%);
+      }
+
+      .hero-content {
+        max-width: 460px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+
+      .hero-brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .hero-logo {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero-logo mat-icon {
+        font-size: 30px;
+        width: 30px;
+        height: 30px;
+      }
+
+      .hero-kicker {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #bfdbfe;
+      }
+
+      .hero-brand h1 {
+        margin: 2px 0 0;
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-lead {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #e2e8f0;
+      }
+
+      .hero-highlights {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .highlight-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+      }
+
+      .highlight-card mat-icon {
+        color: #93c5fd;
+        flex-shrink: 0;
+      }
+
+      .highlight-card strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .highlight-card span {
+        display: block;
+        font-size: 12px;
+        color: #cbd5e1;
+      }
+
+      .form-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 24px;
       }
 
       .login-card {
         width: 100%;
-        max-width: 420px;
-        padding: 16px;
+        max-width: 440px;
+        padding: 32px !important;
       }
 
-      .login-header {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        margin-bottom: 20px;
+      .card-top {
+        margin-bottom: 24px;
       }
 
-      .brand-badge {
-        width: 56px;
-        height: 56px;
-        border-radius: 16px;
-        background: #1565c0;
-        color: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 12px;
+      .welcome-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        background: var(--zegel-primary-soft);
+        color: var(--zegel-primary);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 10px;
       }
 
-      .brand-badge mat-icon {
-        font-size: 30px;
-        width: 30px;
-        height: 30px;
+      .card-top h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--zegel-text);
+      }
+
+      .card-top p {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: var(--zegel-muted);
       }
 
       .login-form {
@@ -188,14 +338,17 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         align-items: center;
         gap: 8px;
         padding: 10px 12px;
-        border-radius: 8px;
-        background: #ffebee;
-        color: #c62828;
+        border-radius: 10px;
+        background: var(--zegel-error-soft);
+        border: 1px solid #fecaca;
+        color: var(--zegel-error);
         font-size: 13px;
       }
 
       .submit-btn {
-        height: 44px;
+        height: 46px;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -205,23 +358,48 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
 
       .demo-section {
         margin-top: 24px;
-        padding-top: 16px;
-        border-top: 1px solid #e0e0e0;
+        padding-top: 18px;
+        border-top: 1px solid var(--zegel-border);
         text-align: center;
       }
 
       .demo-title {
         display: block;
         font-size: 12px;
-        color: #616161;
-        margin-bottom: 10px;
+        font-weight: 500;
+        color: var(--zegel-muted);
+        margin-bottom: 12px;
       }
 
       .demo-buttons {
-        display: flex;
-        justify-content: center;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: 8px;
-        flex-wrap: wrap;
+      }
+
+      .demo-chip {
+        border-radius: 10px !important;
+        border-color: var(--zegel-border) !important;
+        font-size: 12px !important;
+        height: 38px;
+      }
+
+      @media (max-width: 900px) {
+        .login-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-panel {
+          padding: 32px 24px;
+        }
+
+        .hero-highlights {
+          display: none;
+        }
+
+        .demo-buttons {
+          grid-template-columns: 1fr;
+        }
       }
     `,
   ],

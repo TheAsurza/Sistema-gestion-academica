@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -27,6 +28,7 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
     MatButtonModule,
     MatIconModule,
     MatListModule,
+    MatProgressBarModule,
     MatProgressSpinnerModule,
     RoleLabelPipe,
     CourseStatusPipe,
@@ -34,14 +36,19 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
   ],
   template: `
     <div class="dashboard-container">
-      <header class="page-header">
-        <div>
+      <section class="welcome-banner">
+        <div class="welcome-copy">
+          <span class="role-pill">{{ currentUser()?.role | roleLabel }}</span>
           <h1>Bienvenido, {{ currentUser()?.name }}</h1>
-          <p class="subtitle">
-            Panel principal &middot; Rol: <strong>{{ currentUser()?.role | roleLabel }}</strong>
-          </p>
+          <p>Resumen en tiempo real de tu actividad y accesos principales en Zegel LMS.</p>
         </div>
-      </header>
+        <div class="welcome-actions">
+          <a mat-flat-button color="primary" routerLink="/courses" class="banner-cta">
+            <mat-icon>menu_book</mat-icon>
+            Ir a Cursos
+          </a>
+        </div>
+      </section>
 
       @if (loading()) {
         <div class="loading-state">
@@ -50,8 +57,9 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
         </div>
       } @else if (error()) {
         <mat-card class="error-card">
-          <mat-card-content>
-            <p>{{ error() }}</p>
+          <mat-card-content class="error-content">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ error() }}</span>
             <button mat-stroked-button color="primary" type="button" (click)="loadDashboardData()">
               Reintentar
             </button>
@@ -62,92 +70,159 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
           <section class="stats-grid">
             <mat-card class="stat-card">
               <mat-card-content>
-                <div class="stat-header">
-                  <span class="stat-label">Total Usuarios</span>
-                  <mat-icon color="primary">group</mat-icon>
+                <div class="stat-row">
+                  <div>
+                    <span class="stat-label">Total Usuarios</span>
+                    <div class="stat-value tabular-nums">{{ data.total_users }}</div>
+                  </div>
+                  <div class="stat-icon tone-blue">
+                    <mat-icon>group</mat-icon>
+                  </div>
                 </div>
-                <div class="stat-value">{{ data.total_users }}</div>
               </mat-card-content>
             </mat-card>
 
             <mat-card class="stat-card">
               <mat-card-content>
-                <div class="stat-header">
-                  <span class="stat-label">Total Cursos</span>
-                  <mat-icon color="primary">menu_book</mat-icon>
+                <div class="stat-row">
+                  <div>
+                    <span class="stat-label">Total Cursos</span>
+                    <div class="stat-value tabular-nums">{{ data.total_courses }}</div>
+                  </div>
+                  <div class="stat-icon tone-indigo">
+                    <mat-icon>menu_book</mat-icon>
+                  </div>
                 </div>
-                <div class="stat-value">{{ data.total_courses }}</div>
               </mat-card-content>
             </mat-card>
 
             <mat-card class="stat-card">
               <mat-card-content>
-                <div class="stat-header">
-                  <span class="stat-label">Matrículas</span>
-                  <mat-icon color="primary">assignment_turned_in</mat-icon>
+                <div class="stat-row">
+                  <div>
+                    <span class="stat-label">Matrículas</span>
+                    <div class="stat-value tabular-nums">{{ data.total_enrollments }}</div>
+                  </div>
+                  <div class="stat-icon tone-amber">
+                    <mat-icon>assignment_turned_in</mat-icon>
+                  </div>
                 </div>
-                <div class="stat-value">{{ data.total_enrollments }}</div>
               </mat-card-content>
             </mat-card>
 
             <mat-card class="stat-card">
               <mat-card-content>
-                <div class="stat-header">
-                  <span class="stat-label">Cursos Activos</span>
-                  <mat-icon color="primary">check_circle</mat-icon>
+                <div class="stat-row">
+                  <div>
+                    <span class="stat-label">Cursos Activos</span>
+                    <div class="stat-value tabular-nums">{{ data.courses_by_status.active }}</div>
+                  </div>
+                  <div class="stat-icon tone-green">
+                    <mat-icon>check_circle</mat-icon>
+                  </div>
                 </div>
-                <div class="stat-value">{{ data.courses_by_status.active }}</div>
               </mat-card-content>
             </mat-card>
           </section>
 
-          <mat-card class="quick-links-card">
-            <mat-card-header>
-              <mat-card-title>Accesos rápidos</mat-card-title>
-            </mat-card-header>
-            <mat-card-content class="quick-links">
-              <a mat-flat-button color="primary" routerLink="/courses">
-                <mat-icon>menu_book</mat-icon>
-                Gestionar Cursos
-              </a>
-              <a mat-stroked-button color="primary" routerLink="/users">
-                <mat-icon>group</mat-icon>
-                Gestionar Usuarios
-              </a>
-              <a mat-stroked-button color="primary" routerLink="/reports">
-                <mat-icon>bar_chart</mat-icon>
-                Ver Reportes
-              </a>
-            </mat-card-content>
-          </mat-card>
+          <div class="two-col-grid">
+            <mat-card class="panel-card">
+              <mat-card-header>
+                <mat-card-title>Distribución de Cursos</mat-card-title>
+                <mat-card-subtitle>Estado actual del catálogo académico</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content class="progress-stack">
+                <div class="progress-item">
+                  <div class="progress-meta">
+                    <span>Activos</span>
+                    <strong class="tabular-nums">{{ data.courses_by_status.active }} / {{ data.total_courses }}</strong>
+                  </div>
+                  <mat-progress-bar
+                    mode="determinate"
+                    [value]="percent(data.courses_by_status.active, data.total_courses)"
+                  ></mat-progress-bar>
+                </div>
+                <div class="progress-item">
+                  <div class="progress-meta">
+                    <span>Borradores</span>
+                    <strong class="tabular-nums">{{ data.courses_by_status.draft }} / {{ data.total_courses }}</strong>
+                  </div>
+                  <mat-progress-bar
+                    mode="determinate"
+                    [value]="percent(data.courses_by_status.draft, data.total_courses)"
+                  ></mat-progress-bar>
+                </div>
+                <div class="progress-item">
+                  <div class="progress-meta">
+                    <span>Inactivos</span>
+                    <strong class="tabular-nums">{{ data.courses_by_status.inactive }} / {{ data.total_courses }}</strong>
+                  </div>
+                  <mat-progress-bar
+                    mode="determinate"
+                    [value]="percent(data.courses_by_status.inactive, data.total_courses)"
+                  ></mat-progress-bar>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card class="panel-card">
+              <mat-card-header>
+                <mat-card-title>Accesos rápidos</mat-card-title>
+                <mat-card-subtitle>Módulos administrativos</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content class="quick-links">
+                <a mat-flat-button color="primary" routerLink="/courses">
+                  <mat-icon>menu_book</mat-icon>
+                  Gestionar Cursos
+                </a>
+                <a mat-stroked-button color="primary" routerLink="/users">
+                  <mat-icon>group</mat-icon>
+                  Gestionar Usuarios
+                </a>
+                <a mat-stroked-button color="primary" routerLink="/reports">
+                  <mat-icon>bar_chart</mat-icon>
+                  Ver Reportes
+                </a>
+              </mat-card-content>
+            </mat-card>
+          </div>
         }
 
         @if (currentUser()?.role === 'profesor') {
           <section class="stats-grid">
             <mat-card class="stat-card">
               <mat-card-content>
-                <div class="stat-header">
-                  <span class="stat-label">Cursos Asignados</span>
-                  <mat-icon color="primary">menu_book</mat-icon>
+                <div class="stat-row">
+                  <div>
+                    <span class="stat-label">Cursos Asignados</span>
+                    <div class="stat-value tabular-nums">{{ courses().length }}</div>
+                  </div>
+                  <div class="stat-icon tone-blue">
+                    <mat-icon>menu_book</mat-icon>
+                  </div>
                 </div>
-                <div class="stat-value">{{ courses().length }}</div>
               </mat-card-content>
             </mat-card>
 
             <mat-card class="stat-card">
               <mat-card-content>
-                <div class="stat-header">
-                  <span class="stat-label">Cursos Activos</span>
-                  <mat-icon color="primary">play_circle</mat-icon>
+                <div class="stat-row">
+                  <div>
+                    <span class="stat-label">Cursos Activos</span>
+                    <div class="stat-value tabular-nums">{{ activeCourses().length }}</div>
+                  </div>
+                  <div class="stat-icon tone-green">
+                    <mat-icon>play_circle</mat-icon>
+                  </div>
                 </div>
-                <div class="stat-value">{{ activeCourses().length }}</div>
               </mat-card-content>
             </mat-card>
           </section>
 
-          <mat-card class="list-card">
+          <mat-card class="panel-card">
             <mat-card-header>
               <mat-card-title>Cursos Activos Asignados</mat-card-title>
+              <mat-card-subtitle>Acceso directo para actualizar temarios y módulos</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
               @if (activeCourses().length === 0) {
@@ -157,7 +232,7 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
                   @for (course of activeCourses(); track course.id) {
                     <mat-list-item>
                       <mat-icon matListItemIcon>book</mat-icon>
-                      <span matListItemTitle>{{ course.code }} - {{ course.title }}</span>
+                      <span matListItemTitle>{{ course.code }} — {{ course.title }}</span>
                       <span matListItemLine>
                         {{ course.credits }} créditos &middot; {{ course.modules.length }} módulos
                       </span>
@@ -179,49 +254,62 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
           <section class="stats-grid">
             <mat-card class="stat-card">
               <mat-card-content>
-                <div class="stat-header">
-                  <span class="stat-label">Cursos Activos</span>
-                  <mat-icon color="primary">menu_book</mat-icon>
+                <div class="stat-row">
+                  <div>
+                    <span class="stat-label">Cursos Activos</span>
+                    <div class="stat-value tabular-nums">{{ activeCourses().length }}</div>
+                  </div>
+                  <div class="stat-icon tone-blue">
+                    <mat-icon>menu_book</mat-icon>
+                  </div>
                 </div>
-                <div class="stat-value">{{ activeCourses().length }}</div>
               </mat-card-content>
             </mat-card>
 
             <mat-card class="stat-card">
               <mat-card-content>
-                <div class="stat-header">
-                  <span class="stat-label">Cursos Completados</span>
-                  <mat-icon color="primary">task_alt</mat-icon>
+                <div class="stat-row">
+                  <div>
+                    <span class="stat-label">Cursos Completados</span>
+                    <div class="stat-value tabular-nums">{{ completedHistoryCount() }}</div>
+                  </div>
+                  <div class="stat-icon tone-green">
+                    <mat-icon>task_alt</mat-icon>
+                  </div>
                 </div>
-                <div class="stat-value">{{ completedHistoryCount() }}</div>
               </mat-card-content>
             </mat-card>
 
             <mat-card class="stat-card">
               <mat-card-content>
-                <div class="stat-header">
-                  <span class="stat-label">Promedio General</span>
-                  <mat-icon color="primary">grade</mat-icon>
-                </div>
-                <div class="stat-value">
-                  @if (averageGrade() !== null) {
-                    {{ averageGrade() | number: '1.2-2' }}
-                  } @else {
-                    —
-                  }
+                <div class="stat-row">
+                  <div>
+                    <span class="stat-label">Promedio General</span>
+                    <div class="stat-value tabular-nums">
+                      @if (averageGrade() !== null) {
+                        {{ averageGrade() | number: '1.2-2' }}
+                      } @else {
+                        —
+                      }
+                    </div>
+                  </div>
+                  <div class="stat-icon tone-amber">
+                    <mat-icon>grade</mat-icon>
+                  </div>
                 </div>
               </mat-card-content>
             </mat-card>
           </section>
 
-          <mat-card class="quick-links-card">
+          <mat-card class="panel-card">
             <mat-card-header>
               <mat-card-title>Accesos rápidos</mat-card-title>
+              <mat-card-subtitle>Consulta tus cursos matriculados y notas históricas</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content class="quick-links">
               <a mat-flat-button color="primary" routerLink="/courses">
                 <mat-icon>menu_book</mat-icon>
-                Explorar Cursos
+                Explorar Cursos Activos
               </a>
               <a mat-stroked-button color="primary" routerLink="/courses/history">
                 <mat-icon>grade</mat-icon>
@@ -241,78 +329,169 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
         gap: 24px;
       }
 
-      .page-header h1 {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 600;
-        color: #1a237e;
+      .welcome-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding: 24px 28px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: #ffffff;
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.18);
       }
 
-      .subtitle {
-        margin: 4px 0 0;
-        color: #616161;
+      .role-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.18);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+      }
+
+      .welcome-copy h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .welcome-copy p {
+        margin: 6px 0 0;
         font-size: 14px;
+        color: #dbeafe;
+      }
+
+      .banner-cta {
+        background-color: #ffffff !important;
+        color: #1d4ed8 !important;
+        font-weight: 600 !important;
+        border-radius: 10px !important;
       }
 
       .loading-state {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 32px;
+        padding: 40px;
         justify-content: center;
-        color: #616161;
+        color: var(--zegel-muted);
+      }
+
+      .error-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--zegel-error);
       }
 
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 16px;
       }
 
       .stat-card {
-        border-radius: 12px;
+        transition: transform 180ms ease, box-shadow 180ms ease;
       }
 
-      .stat-header {
+      .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07) !important;
+      }
+
+      .stat-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 8px;
+        gap: 12px;
       }
 
       .stat-label {
         font-size: 13px;
         font-weight: 500;
-        color: #616161;
+        color: var(--zegel-muted);
       }
 
       .stat-value {
-        font-size: 32px;
+        margin-top: 6px;
+        font-size: 30px;
         font-weight: 700;
-        color: #1565c0;
+        color: var(--zegel-text);
+        line-height: 1.1;
       }
 
-      .quick-links-card,
-      .list-card,
-      .error-card {
+      .stat-icon {
+        width: 48px;
+        height: 48px;
         border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .tone-blue {
+        background: var(--zegel-primary-soft);
+        color: var(--zegel-primary);
+      }
+
+      .tone-indigo {
+        background: #eef2ff;
+        color: #4f46e5;
+      }
+
+      .tone-amber {
+        background: var(--zegel-warning-soft);
+        color: var(--zegel-warning);
+      }
+
+      .tone-green {
+        background: var(--zegel-success-soft);
+        color: var(--zegel-success);
+      }
+
+      .two-col-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+      }
+
+      .progress-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding-top: 12px !important;
+      }
+
+      .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 6px;
+        color: var(--zegel-text);
       }
 
       .quick-links {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
-        padding-top: 12px;
+        padding-top: 14px !important;
       }
 
       .quick-links a {
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        border-radius: 10px !important;
       }
 
       .empty-text {
-        color: #757575;
+        color: var(--zegel-muted);
         margin: 12px 0;
       }
     `,
@@ -350,6 +529,13 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboardData();
+  }
+
+  percent(part: number, total: number): number {
+    if (!total) {
+      return 0;
+    }
+    return Math.round((part / total) * 100);
   }
 
   loadDashboardData(): void {
