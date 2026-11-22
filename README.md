@@ -1,12 +1,12 @@
 # Zegel — Plataforma de Gestión de Cursos y Usuarios (Desarrollo de Interfaces III)
 
-Aplicación web **SPA (Single Page Application)** desarrollada con **Angular 22 Standalone + Angular Material** y un backend **REST API en PHP 8+ (PDO / MySQL)** con autenticación **JWT (HS256)** y control de acceso basado en roles (**RBAC**).
+Aplicación web **SPA (Single Page Application)** desarrollada con **Angular 22 Standalone + Bootstrap 5** y un backend **REST API en PHP 8+ (PDO / MySQL)** con autenticación **JWT (HS256)** y control de acceso basado en roles (**RBAC**).
 
 ---
 
 ## Arquitectura General
 
-- **`frontend/`**: Aplicación Angular Standalone (`@angular/core`, `@angular/material`, `rxjs`) con rutas lazy-loaded, layout principal autenticado (`MainLayoutComponent`), 3 functional guards (`authGuard`, `loginGuard`, `roleGuard`), 2 interceptores HTTP funcionales (`authInterceptor`, `errorInterceptor`), formularios reactivos con `FormArray` y validadores asíncronos, pipes personalizados y directivas estructurales/de atributo.
+- **`frontend/`**: Aplicación Angular Standalone (`@angular/core`, `bootstrap`, `bootstrap-icons`, `rxjs`) con rutas lazy-loaded, layout principal autenticado (`MainLayoutComponent`), 3 functional guards (`authGuard`, `loginGuard`, `roleGuard`), 2 interceptores HTTP funcionales (`authInterceptor`, `errorInterceptor`), formularios reactivos con `FormArray` y validadores asíncronos, pipes personalizados y directivas estructurales/de atributo.
 - **`backend/`**: API REST en PHP 8+ sin frameworks externos, con conexión **PDO** a MySQL (`zegel_cursos_db`), autenticación **JWT HS256** (`backend/helpers/jwt.php`, TTL de `3600` segundos), cabeceras CORS y validación estricta de roles en cada endpoint (`backend/index.php`, `backend/helpers/response.php`).
 
 ---

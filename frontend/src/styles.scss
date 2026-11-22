@@ -1,63 +1,50 @@
-@import '@angular/material/prebuilt-themes/azure-blue.css';
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
 
 :root {
   --zegel-font: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --mat-sys-plain-font-family: var(--zegel-font);
-  --mat-sys-brand-font-family: var(--zegel-font);
+  --bs-body-font-family: var(--zegel-font);
 
-  /* Core Claymorphism Palette */
-  --zegel-primary: #4f46e5;
-  --zegel-primary-dark: #3730a3;
-  --zegel-primary-soft: #e0e7ff;
-  --zegel-primary-border: #c7d2fe;
-  --zegel-accent: #f97316;
-  --zegel-bg: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 52%, #fef3c7 100%);
-  --zegel-surface: #ffffff;
-  --zegel-surface-soft: #f8faff;
-  --zegel-text: #1e293b;
+  --zegel-primary: #2563eb;
+  --zegel-primary-dark: #1d4ed8;
+  --zegel-primary-soft: rgba(37, 99, 235, 0.12);
+  --zegel-primary-border: rgba(37, 99, 235, 0.25);
+
+  --zegel-bg:
+    radial-gradient(circle at 12% 18%, rgba(59, 130, 246, 0.24) 0%, transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(99, 102, 241, 0.22) 0%, transparent 40%),
+    radial-gradient(circle at 75% 88%, rgba(14, 165, 233, 0.18) 0%, transparent 44%),
+    linear-gradient(135deg, #dbeafe 0%, #e0e7ff 50%, #e2e8f0 100%);
+
+  --zegel-glass-bg: rgba(255, 255, 255, 0.72);
+  --zegel-glass-bg-strong: rgba(255, 255, 255, 0.88);
+  --zegel-glass-border: rgba(255, 255, 255, 0.65);
+  --zegel-glass-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+
+  --zegel-text: #0f172a;
   --zegel-muted: #475569;
-  --zegel-border: #cbd5e1;
+  --zegel-border: rgba(148, 163, 184, 0.28);
 
-  /* Semantic Status & Role Tokens */
   --zegel-success: #047857;
-  --zegel-success-soft: #d1fae5;
-  --zegel-success-border: #6ee7b7;
+  --zegel-success-soft: rgba(16, 185, 129, 0.14);
+  --zegel-success-border: rgba(16, 185, 129, 0.35);
   --zegel-warning: #b45309;
-  --zegel-warning-soft: #fef3c7;
-  --zegel-warning-border: #fcd34d;
+  --zegel-warning-soft: rgba(245, 158, 11, 0.14);
+  --zegel-warning-border: rgba(245, 158, 11, 0.35);
   --zegel-error: #b91c1c;
-  --zegel-error-soft: #fee2e2;
-  --zegel-error-border: #fca5a5;
+  --zegel-error-soft: rgba(239, 68, 68, 0.12);
+  --zegel-error-border: rgba(239, 68, 68, 0.35);
   --zegel-indigo: #5b21b6;
-  --zegel-indigo-soft: #ede9fe;
-  --zegel-indigo-border: #ddd6fe;
-  --zegel-neutral-soft: #f1f5f9;
-  --zegel-neutral-border: #cbd5e1;
+  --zegel-indigo-soft: rgba(139, 92, 246, 0.14);
+  --zegel-indigo-border: rgba(139, 92, 246, 0.32);
+  --zegel-neutral-soft: rgba(148, 163, 184, 0.14);
+  --zegel-neutral-border: rgba(148, 163, 184, 0.32);
 
-  /* Claymorphism Geometry, Borders & Double Shadows */
-  --zegel-radius: 22px;
-  --zegel-radius-sm: 14px;
+  --zegel-radius: 16px;
+  --zegel-radius-sm: 12px;
   --zegel-radius-pill: 9999px;
-  --zegel-clay-border: 3px solid #dbeafe;
-  --zegel-clay-shadow:
-    0 10px 24px rgba(79, 70, 229, 0.12),
-    inset -4px -4px 10px rgba(148, 163, 184, 0.18),
-    inset 4px 4px 10px rgba(255, 255, 255, 0.95);
-  --zegel-clay-shadow-hover:
-    0 14px 30px rgba(79, 70, 229, 0.18),
-    inset -4px -4px 10px rgba(148, 163, 184, 0.2),
-    inset 4px 4px 10px rgba(255, 255, 255, 0.98);
-  --zegel-clay-shadow-sm:
-    0 4px 10px rgba(79, 70, 229, 0.12),
-    inset -2px -2px 5px rgba(148, 163, 184, 0.16),
-    inset 2px 2px 6px rgba(255, 255, 255, 0.92);
-  --zegel-ease-clay: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  /* Hero & Sidenav Tokens */
-  --zegel-hero-bg: linear-gradient(135deg, #4338ca 0%, #6366f1 55%, #818cf8 100%);
-  --zegel-hero-text: #ffffff;
-  --zegel-hero-muted: #e0e7ff;
-  --zegel-sidenav-bg: #eef2ff;
 }
 
 html,
@@ -74,21 +61,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1,
-h2,
-h3,
-h4,
-p,
-a,
-button,
-input,
-textarea,
-select,
-td,
-th {
-  font-family: var(--zegel-font);
-}
-
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
@@ -103,61 +75,79 @@ select:focus-visible,
   font-variant-numeric: tabular-nums;
 }
 
-.mat-mdc-card {
-  background-color: var(--zegel-surface) !important;
-  border: var(--zegel-clay-border) !important;
-  border-radius: var(--zegel-radius) !important;
-  box-shadow: var(--zegel-clay-shadow) !important;
-  transition: transform 200ms var(--zegel-ease-clay), box-shadow 200ms ease;
+.glass-card {
+  background: var(--zegel-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--zegel-glass-border);
+  border-radius: var(--zegel-radius);
+  box-shadow: var(--zegel-glass-shadow);
 }
 
-.mat-mdc-dialog-surface {
-  background-color: var(--zegel-surface) !important;
-  border: var(--zegel-clay-border);
-  border-radius: var(--zegel-radius) !important;
-  box-shadow: var(--zegel-clay-shadow-hover) !important;
+.glass-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
 }
 
-.mat-mdc-unelevated-button,
-.mat-mdc-raised-button,
-.mat-mdc-outlined-button {
-  border-radius: var(--zegel-radius-sm) !important;
-  transition: transform 180ms var(--zegel-ease-clay), box-shadow 180ms ease !important;
+.glass-modal {
+  width: 100%;
+  background: var(--zegel-glass-bg-strong);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.2);
 }
 
-.mat-mdc-unelevated-button:not(:disabled):active,
-.mat-mdc-outlined-button:not(:disabled):active {
-  transform: scale(0.97);
+.table.glass-table {
+  --bs-table-bg: transparent;
+  --bs-table-hover-bg: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0;
 }
 
-.mat-mdc-table {
-  background: transparent !important;
-}
-
-.mat-mdc-header-row {
-  background-color: var(--zegel-primary-soft) !important;
-}
-
-.mat-mdc-header-cell {
-  color: var(--zegel-primary-dark) !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
+.table.glass-table thead th {
+  background: rgba(241, 245, 249, 0.72);
+  color: var(--zegel-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 2px solid var(--zegel-primary-border) !important;
+  border-bottom: 1px solid var(--zegel-border);
+  padding: 0.85rem 1rem;
 }
 
-.mat-mdc-row {
-  transition: background-color 150ms ease;
-}
-
-.mat-mdc-row:hover {
-  background-color: var(--zegel-surface-soft);
-}
-
-.mat-mdc-cell {
-  border-bottom-color: var(--zegel-border) !important;
+.table.glass-table tbody td {
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+  border-bottom-color: var(--zegel-border);
   color: var(--zegel-text);
+}
+
+.form-control,
+.form-select {
+  border-radius: 10px;
+  border-color: var(--zegel-border);
+  background-color: rgba(255, 255, 255, 0.85);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--zegel-primary);
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.18);
+  background-color: #ffffff;
+}
+
+.btn {
+  border-radius: 10px;
+  font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {

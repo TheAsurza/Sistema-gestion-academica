@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import {
   AbstractControl,
   AsyncValidatorFn,
@@ -7,174 +7,169 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
 import { Observable, catchError, map, of, switchMap, timer } from 'rxjs';
 import { User, UserPayload, UserRole } from '../../../core/models/user.model';
 import { UserService } from '../../../core/services/user.service';
 
-export interface UserFormDialogData {
-  user?: User;
-}
-
 @Component({
   selector: 'app-user-form-dialog',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-  ],
+  imports: [ReactiveFormsModule],
   template: `
-    <h2 mat-dialog-title>{{ isEdit ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
-
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <mat-dialog-content class="dialog-content">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nombre completo</mat-label>
-          <input matInput formControlName="name" placeholder="Ej. Ana García" />
-          @if (form.controls.name.hasError('required') && form.controls.name.touched) {
-            <mat-error>El nombre es obligatorio.</mat-error>
-          } @else if (form.controls.name.hasError('minlength') && form.controls.name.touched) {
-            <mat-error>Mínimo 3 caracteres.</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Correo electrónico</mat-label>
-          <input
-            matInput
-            type="email"
-            formControlName="email"
-            placeholder="usuario@zegel.edu.pe"
-          />
-          @if (form.controls.email.pending) {
-            <mat-spinner matSuffix diameter="18"></mat-spinner>
-          }
-          @if (form.controls.email.hasError('required') && form.controls.email.touched) {
-            <mat-error>El correo electrónico es obligatorio.</mat-error>
-          } @else if (form.controls.email.hasError('email') && form.controls.email.touched) {
-            <mat-error>Ingresa un correo electrónico válido.</mat-error>
-          } @else if (form.controls.email.hasError('emailTaken')) {
-            <mat-error>Este correo electrónico ya está registrado.</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Rol</mat-label>
-          <mat-select formControlName="role">
-            <mat-option value="admin">Administrador</mat-option>
-            <mat-option value="profesor">Profesor</mat-option>
-            <mat-option value="estudiante">Estudiante</mat-option>
-          </mat-select>
-          @if (form.controls.role.hasError('required') && form.controls.role.touched) {
-            <mat-error>El rol es obligatorio.</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>{{ isEdit ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</mat-label>
-          <input
-            matInput
-            [type]="hidePassword() ? 'password' : 'text'"
-            formControlName="password"
-            [placeholder]="isEdit ? 'Dejar en blanco para mantener la actual' : 'Mínimo 6 caracteres'"
-          />
+    <div
+      class="glass-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="isEdit ? 'Editar Usuario' : 'Nuevo Usuario'"
+      (click)="cancelled.emit()"
+    >
+      <div class="glass-modal user-modal p-4" (click)="$event.stopPropagation()">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">{{ isEdit ? 'Editar Usuario' : 'Nuevo Usuario' }}</h5>
           <button
-            mat-icon-button
-            matSuffix
             type="button"
-            [attr.aria-label]="hidePassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'"
-            (click)="hidePassword.set(!hidePassword())"
-          >
-            <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-          @if (form.controls.password.hasError('required') && form.controls.password.touched) {
-            <mat-error>La contraseña es obligatoria.</mat-error>
-          } @else if (form.controls.password.hasError('minlength') && form.controls.password.touched) {
-            <mat-error>Mínimo 6 caracteres.</mat-error>
-          }
-        </mat-form-field>
-      </mat-dialog-content>
+            class="btn-close"
+            aria-label="Cerrar"
+            (click)="cancelled.emit()"
+          ></button>
+        </div>
 
-      <mat-dialog-actions align="end">
-        <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-        <button
-          mat-flat-button
-          color="primary"
-          type="submit"
-          [disabled]="form.invalid || form.pending"
-        >
-          {{ isEdit ? 'Guardar cambios' : 'Crear usuario' }}
-        </button>
-      </mat-dialog-actions>
-    </form>
+        <form [formGroup]="form" (ngSubmit)="onSave()" class="d-flex flex-column gap-3">
+          <div>
+            <label class="form-label small fw-semibold">Nombre completo</label>
+            <input
+              type="text"
+              class="form-control"
+              [class.is-invalid]="form.controls.name.invalid && form.controls.name.touched"
+              formControlName="name"
+              placeholder="Ej. María Torres"
+            />
+            @if (form.controls.name.hasError('required') && form.controls.name.touched) {
+              <div class="text-danger small mt-1">El nombre es obligatorio.</div>
+            } @else if (form.controls.name.hasError('minlength') && form.controls.name.touched) {
+              <div class="text-danger small mt-1">Mínimo 3 caracteres.</div>
+            }
+          </div>
+
+          <div>
+            <label class="form-label small fw-semibold">Correo electrónico</label>
+            <input
+              type="email"
+              class="form-control"
+              [class.is-invalid]="form.controls.email.invalid && form.controls.email.touched"
+              formControlName="email"
+              placeholder="usuario@zegel.edu.pe"
+            />
+            @if (form.controls.email.pending) {
+              <div class="form-text text-primary">Verificando disponibilidad...</div>
+            } @else if (form.controls.email.hasError('required') && form.controls.email.touched) {
+              <div class="text-danger small mt-1">El correo es obligatorio.</div>
+            } @else if (form.controls.email.hasError('email') && form.controls.email.touched) {
+              <div class="text-danger small mt-1">Ingresa un correo válido.</div>
+            } @else if (form.controls.email.hasError('emailTaken')) {
+              <div class="text-danger small mt-1">Este correo ya está registrado.</div>
+            }
+          </div>
+
+          <div>
+            <label class="form-label small fw-semibold">Rol</label>
+            <select class="form-select" formControlName="role">
+              <option value="admin">Administrador</option>
+              <option value="profesor">Profesor</option>
+              <option value="estudiante">Estudiante</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label small fw-semibold">
+              {{ isEdit ? 'Nueva contraseña (opcional)' : 'Contraseña' }}
+            </label>
+            <input
+              type="password"
+              class="form-control"
+              [class.is-invalid]="form.controls.password.invalid && form.controls.password.touched"
+              formControlName="password"
+              autocomplete="new-password"
+            />
+            @if (isEdit) {
+              <div class="form-text">Déjalo vacío para mantener la contraseña actual.</div>
+            }
+            @if (form.controls.password.hasError('required') && form.controls.password.touched) {
+              <div class="text-danger small mt-1">La contraseña es obligatoria.</div>
+            } @else if (form.controls.password.hasError('minlength') && form.controls.password.touched) {
+              <div class="text-danger small mt-1">Mínimo 6 caracteres.</div>
+            }
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+            <button type="button" class="btn btn-outline-secondary" (click)="cancelled.emit()">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="form.invalid || form.pending"
+            >
+              {{ isEdit ? 'Guardar cambios' : 'Crear usuario' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   `,
   styles: [
     `
-      .dialog-content {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        min-width: 440px;
-        max-width: 100%;
-        padding-top: 8px;
-      }
-
-      .full-width {
-        width: 100%;
-      }
-
-      @media (max-width: 540px) {
-        .dialog-content {
-          min-width: auto;
-        }
+      .user-modal {
+        max-width: 480px;
       }
     `,
   ],
 })
-export class UserFormDialogComponent {
+export class UserFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
-  private readonly dialogRef = inject(
-    MatDialogRef<UserFormDialogComponent, UserPayload | undefined>,
-  );
-  readonly data = inject<UserFormDialogData | null>(MAT_DIALOG_DATA, { optional: true });
 
-  readonly isEdit = !!this.data?.user;
-  readonly hidePassword = signal(true);
+  @Input() user: User | null = null;
+  @Output() saved = new EventEmitter<UserPayload>();
+  @Output() cancelled = new EventEmitter<void>();
+
+  isEdit = false;
+  private originalEmail = '';
 
   readonly form = this.fb.nonNullable.group({
-    name: [this.data?.user?.name ?? '', [Validators.required, Validators.minLength(3)]],
+    name: ['', [Validators.required, Validators.minLength(3)]],
     email: [
-      this.data?.user?.email ?? '',
+      '',
       [Validators.required, Validators.email],
       [this.emailAvailableValidator()],
     ],
-    role: [this.data?.user?.role ?? ('estudiante' as UserRole), [Validators.required]],
-    password: [
-      '',
-      this.isEdit
-        ? [Validators.minLength(6)]
-        : [Validators.required, Validators.minLength(6)],
-    ],
+    role: ['estudiante' as UserRole, [Validators.required]],
+    password: [''],
   });
 
-  onCancel(): void {
-    this.dialogRef.close(undefined);
+  ngOnInit(): void {
+    this.isEdit = !!this.user;
+    this.originalEmail = this.user?.email?.trim().toLowerCase() ?? '';
+
+    const passwordCtrl = this.form.controls.password;
+    if (this.isEdit) {
+      passwordCtrl.setValidators([Validators.minLength(6)]);
+    } else {
+      passwordCtrl.setValidators([Validators.required, Validators.minLength(6)]);
+    }
+    passwordCtrl.updateValueAndValidity();
+
+    if (this.user) {
+      this.form.patchValue({
+        name: this.user.name,
+        email: this.user.email,
+        role: this.user.role,
+        password: '',
+      });
+    }
   }
 
-  onSubmit(): void {
+  onSave(): void {
     if (this.form.invalid || this.form.pending) {
       this.form.markAllAsTouched();
       return;
@@ -183,33 +178,30 @@ export class UserFormDialogComponent {
     const raw = this.form.getRawValue();
     const payload: UserPayload = {
       name: raw.name.trim(),
-      email: raw.email.trim(),
+      email: raw.email.trim().toLowerCase(),
       role: raw.role,
     };
 
-    if (!this.isEdit || raw.password.trim().length > 0) {
-      payload.password = raw.password;
+    const password = raw.password.trim();
+    if (password.length > 0) {
+      payload.password = password;
     }
 
-    this.dialogRef.close(payload);
+    this.saved.emit(payload);
   }
 
   private emailAvailableValidator(): AsyncValidatorFn {
-    const initialEmail = this.data?.user?.email?.trim().toLowerCase() ?? '';
-    const excludeId = this.data?.user?.id;
-
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
-      const value = String(control.value ?? '').trim();
-      if (!value || Validators.email(control) !== null) {
+      const value = String(control.value ?? '').trim().toLowerCase();
+      if (!value || control.hasError('email')) {
         return of(null);
       }
-
-      if (this.isEdit && value.toLowerCase() === initialEmail) {
+      if (this.isEdit && value === this.originalEmail) {
         return of(null);
       }
 
       return timer(300).pipe(
-        switchMap(() => this.userService.checkEmailAvailable(value, excludeId)),
+        switchMap(() => this.userService.checkEmailAvailable(value, this.user?.id)),
         map((available) => (available ? null : { emailTaken: true })),
         catchError(() => of(null)),
       );

@@ -1,9 +1,4 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTableModule } from '@angular/material/table';
 import { CourseStatus } from '../../core/models/course.model';
 import { ReportSummary } from '../../core/models/report.model';
 import { UserRole } from '../../core/models/user.model';
@@ -25,233 +20,142 @@ interface CourseStatusBreakdownRow {
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatTableModule,
-    RoleLabelPipe,
-    CourseStatusPipe,
-    HighlightStatusDirective,
-  ],
+  imports: [RoleLabelPipe, CourseStatusPipe, HighlightStatusDirective],
   template: `
-    <div class="reports-container">
-      <header class="page-header">
+    <div class="d-flex flex-column gap-4">
+      <header class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-          <h1>Reportes del Sistema</h1>
-          <p class="subtitle">Resumen general de usuarios, cursos y matrículas</p>
+          <h1 class="h3 fw-bold mb-1">Reportes del Sistema</h1>
+          <p class="text-muted small mb-0">Resumen estadístico de usuarios, cursos y matrículas</p>
         </div>
 
         <button
-          mat-stroked-button
-          color="primary"
           type="button"
-          [disabled]="loading()"
+          class="btn btn-outline-primary bg-white bg-opacity-50 btn-sm"
           (click)="loadSummary()"
+          [disabled]="loading()"
         >
-          <mat-icon>refresh</mat-icon>
-          Actualizar
+          <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
         </button>
       </header>
 
       @if (loading()) {
-        <div class="loading-state">
-          <mat-spinner diameter="40"></mat-spinner>
-          <span>Cargando reportes...</span>
+        <div class="glass-card p-5 text-center text-muted">
+          <div class="spinner-border text-primary mb-2" role="status"></div>
+          <div>Cargando estadísticas...</div>
         </div>
       } @else if (error()) {
-        <mat-card class="error-card">
-          <mat-card-content>
-            <p>{{ error() }}</p>
-            <button mat-stroked-button color="primary" type="button" (click)="loadSummary()">
-              Reintentar
-            </button>
-          </mat-card-content>
-        </mat-card>
+        <div class="glass-card p-4 d-flex align-items-center justify-content-between gap-3 text-danger">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>{{ error() }}</span>
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-sm" (click)="loadSummary()">
+            Reintentar
+          </button>
+        </div>
       } @else if (summary(); as data) {
-        <section class="stats-grid">
-          <mat-card class="stat-card">
-            <mat-card-content>
-              <div class="stat-header">
-                <span class="stat-label">Total de Usuarios</span>
-                <mat-icon color="primary">group</mat-icon>
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <div class="glass-card p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-muted small fw-semibold">Total Usuarios</div>
+                  <div class="fs-2 fw-bold text-primary tabular-nums mt-1">{{ data.total_users }}</div>
+                </div>
+                <i class="bi bi-people-fill fs-2 text-primary opacity-75"></i>
               </div>
-              <div class="stat-value">{{ data.total_users }}</div>
-            </mat-card-content>
-          </mat-card>
+            </div>
+          </div>
 
-          <mat-card class="stat-card">
-            <mat-card-content>
-              <div class="stat-header">
-                <span class="stat-label">Total de Cursos</span>
-                <mat-icon color="primary">menu_book</mat-icon>
+          <div class="col-12 col-md-4">
+            <div class="glass-card p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-muted small fw-semibold">Total Cursos</div>
+                  <div class="fs-2 fw-bold text-primary tabular-nums mt-1">{{ data.total_courses }}</div>
+                </div>
+                <i class="bi bi-journal-bookmark-fill fs-2 text-primary opacity-75"></i>
               </div>
-              <div class="stat-value">{{ data.total_courses }}</div>
-            </mat-card-content>
-          </mat-card>
+            </div>
+          </div>
 
-          <mat-card class="stat-card">
-            <mat-card-content>
-              <div class="stat-header">
-                <span class="stat-label">Total de Matrículas</span>
-                <mat-icon color="primary">assignment_turned_in</mat-icon>
+          <div class="col-12 col-md-4">
+            <div class="glass-card p-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="text-muted small fw-semibold">Total Matrículas</div>
+                  <div class="fs-2 fw-bold text-primary tabular-nums mt-1">{{ data.total_enrollments }}</div>
+                </div>
+                <i class="bi bi-clipboard2-check-fill fs-2 text-primary opacity-75"></i>
               </div>
-              <div class="stat-value">{{ data.total_enrollments }}</div>
-            </mat-card-content>
-          </mat-card>
-        </section>
+            </div>
+          </div>
+        </div>
 
-        <section class="breakdown-grid">
-          <mat-card class="breakdown-card">
-            <mat-card-header>
-              <mat-card-title>Usuarios por Rol</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <table mat-table [dataSource]="roleBreakdown()" class="breakdown-table">
-                <ng-container matColumnDef="role">
-                  <th mat-header-cell *matHeaderCellDef>Rol</th>
-                  <td mat-cell *matCellDef="let row">{{ row.role | roleLabel }}</td>
-                </ng-container>
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <div class="glass-card p-4 h-100">
+              <h2 class="h5 fw-bold mb-3">Usuarios por Rol</h2>
+              <div class="table-responsive">
+                <table class="table glass-table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Rol</th>
+                      <th class="text-end">Cantidad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of roleRows(); track row.role) {
+                      <tr>
+                        <td>{{ row.role | roleLabel }}</td>
+                        <td class="text-end fw-bold tabular-nums">{{ row.count }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-                <ng-container matColumnDef="count">
-                  <th mat-header-cell *matHeaderCellDef class="numeric-col">Cantidad</th>
-                  <td mat-cell *matCellDef="let row" class="numeric-col">
-                    <strong>{{ row.count }}</strong>
-                  </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="roleColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: roleColumns"></tr>
-              </table>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card class="breakdown-card">
-            <mat-card-header>
-              <mat-card-title>Cursos por Estado</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <table mat-table [dataSource]="courseStatusBreakdown()" class="breakdown-table">
-                <ng-container matColumnDef="status">
-                  <th mat-header-cell *matHeaderCellDef>Estado</th>
-                  <td mat-cell *matCellDef="let row">
-                    <span [appHighlightStatus]="row.status">
-                      {{ row.status | courseStatus }}
-                    </span>
-                  </td>
-                </ng-container>
-
-                <ng-container matColumnDef="count">
-                  <th mat-header-cell *matHeaderCellDef class="numeric-col">Cantidad</th>
-                  <td mat-cell *matCellDef="let row" class="numeric-col">
-                    <strong>{{ row.count }}</strong>
-                  </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="statusColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: statusColumns"></tr>
-              </table>
-            </mat-card-content>
-          </mat-card>
-        </section>
+          <div class="col-12 col-lg-6">
+            <div class="glass-card p-4 h-100">
+              <h2 class="h5 fw-bold mb-3">Cursos por Estado</h2>
+              <div class="table-responsive">
+                <table class="table glass-table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Estado</th>
+                      <th class="text-end">Cantidad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of courseStatusRows(); track row.status) {
+                      <tr>
+                        <td>
+                          <span [appHighlightStatus]="row.status">{{ row.status | courseStatus }}</span>
+                        </td>
+                        <td class="text-end fw-bold tabular-nums">{{ row.count }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       }
     </div>
   `,
-  styles: [
-    `
-      .reports-container {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-      }
-
-      .page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 16px;
-      }
-
-      .page-header h1 {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--zegel-text);
-      }
-
-      .subtitle {
-        margin: 4px 0 0;
-        color: var(--zegel-muted);
-        font-size: 14px;
-      }
-
-      .loading-state {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        padding: 40px 16px;
-        color: var(--zegel-muted);
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 16px;
-      }
-
-      .stat-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 8px;
-      }
-
-      .stat-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--zegel-muted);
-      }
-
-      .stat-value {
-        font-size: 32px;
-        font-weight: 700;
-        color: var(--zegel-primary);
-      }
-
-      .breakdown-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 16px;
-      }
-
-      .breakdown-card mat-card-header {
-        margin-bottom: 8px;
-      }
-
-      .breakdown-table {
-        width: 100%;
-      }
-
-      .numeric-col {
-        text-align: right;
-      }
-    `,
-  ],
 })
 export class ReportsComponent implements OnInit {
   private readonly reportService = inject(ReportService);
 
+  readonly summary = signal<ReportSummary | null>(null);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly summary = signal<ReportSummary | null>(null);
 
-  readonly roleColumns = ['role', 'count'];
-  readonly statusColumns = ['status', 'count'];
-
-  readonly roleBreakdown = computed<RoleBreakdownRow[]>(() => {
+  readonly roleRows = computed<RoleBreakdownRow[]>(() => {
     const data = this.summary();
     if (!data) {
       return [];
@@ -263,7 +167,7 @@ export class ReportsComponent implements OnInit {
     }));
   });
 
-  readonly courseStatusBreakdown = computed<CourseStatusBreakdownRow[]>(() => {
+  readonly courseStatusRows = computed<CourseStatusBreakdownRow[]>(() => {
     const data = this.summary();
     if (!data) {
       return [];

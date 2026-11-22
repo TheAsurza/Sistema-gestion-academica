@@ -1,13 +1,5 @@
-import { BreakpointObserver } from '@angular/cdk/layout';
 import { AsyncPipe } from '@angular/common';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { map } from 'rxjs';
 import { UserRole } from '../../../core/models/user.model';
@@ -25,31 +17,31 @@ const MENU_ITEMS: NavMenuItem[] = [
   {
     label: 'Dashboard',
     route: '/dashboard',
-    icon: 'dashboard',
+    icon: 'bi-grid-1x2-fill',
     roles: ['admin', 'profesor', 'estudiante'],
   },
   {
     label: 'Cursos',
     route: '/courses',
-    icon: 'menu_book',
+    icon: 'bi-journal-bookmark-fill',
     roles: ['admin', 'profesor', 'estudiante'],
   },
   {
     label: 'Historial de Notas',
     route: '/courses/history',
-    icon: 'grade',
+    icon: 'bi-award-fill',
     roles: ['estudiante'],
   },
   {
     label: 'Usuarios',
     route: '/users',
-    icon: 'group',
+    icon: 'bi-people-fill',
     roles: ['admin'],
   },
   {
     label: 'Reportes',
     route: '/reports',
-    icon: 'bar_chart',
+    icon: 'bi-bar-chart-fill',
     roles: ['admin'],
   },
 ];
@@ -57,233 +49,237 @@ const MENU_ITEMS: NavMenuItem[] = [
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [
-    AsyncPipe,
-    RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
-    MatSidenavModule,
-    MatToolbarModule,
-    MatListModule,
-    MatIconModule,
-    MatButtonModule,
-    MatTooltipModule,
-    RoleLabelPipe,
-  ],
+  imports: [AsyncPipe, RouterOutlet, RouterLink, RouterLinkActive, RoleLabelPipe],
   template: `
-    <mat-sidenav-container class="layout-container">
-      <mat-sidenav
-        #sidenav
-        [mode]="isMobile() ? 'over' : 'side'"
-        [opened]="!isMobile()"
-        class="layout-sidenav"
-      >
-        <div class="sidenav-inner">
-          <div class="brand-header">
-            <div class="brand-logo">
-              <mat-icon>school</mat-icon>
-            </div>
-            <div class="brand-text">
-              <span class="brand-title">Zegel LMS</span>
-              <span class="brand-subtitle">Gestión Académica</span>
-            </div>
+    <div class="shell-wrapper">
+      <!-- Desktop Glass Sidebar -->
+      <aside class="glass-sidebar d-none d-lg-flex flex-column">
+        <div class="brand-header">
+          <div class="brand-logo">
+            <i class="bi bi-mortarboard-fill"></i>
           </div>
+          <div>
+            <div class="brand-title">Zegel LMS</div>
+            <div class="brand-subtitle">Gestión Académica</div>
+          </div>
+        </div>
 
-          <div class="nav-section-label">Navegación</div>
+        <div class="nav-label">Navegación</div>
+        <nav class="nav flex-column px-3 gap-1">
+          @for (item of visibleMenuItems$ | async; track item.route) {
+            <a
+              class="nav-link glass-nav-link"
+              [routerLink]="item.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.route === '/courses' }"
+            >
+              <i class="bi" [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </a>
+          }
+        </nav>
 
-          <mat-nav-list class="nav-list">
-            @for (item of visibleMenuItems$ | async; track item.route) {
-              <a
-                mat-list-item
-                [routerLink]="item.route"
-                routerLinkActive="active-nav-item"
-                [routerLinkActiveOptions]="{ exact: item.route === '/courses' }"
-                (click)="isMobile() && sidenav.close()"
-                class="nav-item"
-              >
-                <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-                <span matListItemTitle>{{ item.label }}</span>
-              </a>
-            }
-          </mat-nav-list>
-
-          @if (currentUser$ | async; as user) {
-            <div class="sidenav-footer">
-              <div class="user-card">
-                <div class="user-avatar">{{ getInitials(user.name) }}</div>
-                <div class="user-card-meta">
-                  <span class="user-card-name">{{ user.name }}</span>
-                  <span class="user-card-role">{{ user.role | roleLabel }}</span>
-                </div>
+        @if (currentUser$ | async; as user) {
+          <div class="mt-auto p-3 border-top border-white border-opacity-10">
+            <div class="sidebar-user-card">
+              <div class="user-avatar">{{ getInitials(user.name) }}</div>
+              <div class="min-w-0">
+                <div class="text-white fw-semibold small text-truncate">{{ user.name }}</div>
+                <div class="text-secondary-light small">{{ user.role | roleLabel }}</div>
               </div>
             </div>
-          }
-        </div>
-      </mat-sidenav>
+          </div>
+        }
+      </aside>
 
-      <mat-sidenav-content class="layout-content">
-        <mat-toolbar class="layout-toolbar">
-          <button
-            mat-icon-button
-            type="button"
-            aria-label="Alternar menú"
-            (click)="sidenav.toggle()"
+      <!-- Mobile Offcanvas Sidebar -->
+      @if (mobileMenuOpen()) {
+        <div class="mobile-backdrop d-lg-none" (click)="mobileMenuOpen.set(false)">
+          <aside
+            class="glass-sidebar mobile-drawer d-flex flex-column"
+            (click)="$event.stopPropagation()"
           >
-            <mat-icon>menu</mat-icon>
-          </button>
+            <div class="brand-header justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <div class="brand-logo">
+                  <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <span class="brand-title">Zegel LMS</span>
+              </div>
+              <button
+                type="button"
+                class="btn-close btn-close-white"
+                aria-label="Cerrar menú"
+                (click)="mobileMenuOpen.set(false)"
+              ></button>
+            </div>
 
-          <span class="toolbar-brand-mobile">Zegel LMS</span>
-          <span class="toolbar-spacer"></span>
+            <nav class="nav flex-column p-3 gap-1">
+              @for (item of visibleMenuItems$ | async; track item.route) {
+                <a
+                  class="nav-link glass-nav-link"
+                  [routerLink]="item.route"
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{ exact: item.route === '/courses' }"
+                  (click)="mobileMenuOpen.set(false)"
+                >
+                  <i class="bi" [class]="item.icon"></i>
+                  <span>{{ item.label }}</span>
+                </a>
+              }
+            </nav>
+          </aside>
+        </div>
+      }
+
+      <!-- Main Content -->
+      <div class="main-area">
+        <header class="glass-topbar px-3 px-lg-4">
+          <div class="d-flex align-items-center gap-2">
+            <button
+              type="button"
+              class="btn btn-light btn-sm d-lg-none"
+              aria-label="Abrir menú"
+              (click)="mobileMenuOpen.set(true)"
+            >
+              <i class="bi bi-list fs-5"></i>
+            </button>
+            <span class="fw-bold d-lg-none">Zegel LMS</span>
+          </div>
 
           @if (currentUser$ | async; as user) {
-            <div class="user-info">
-              <span class="user-name">{{ user.name }}</span>
-              <span class="role-badge">{{ user.role | roleLabel }}</span>
+            <div class="d-flex align-items-center gap-2 gap-md-3 ms-auto">
+              <span class="d-none d-md-inline fw-semibold small">{{ user.name }}</span>
+              <span class="role-pill">{{ user.role | roleLabel }}</span>
               <button
-                mat-stroked-button
                 type="button"
-                class="logout-btn"
-                matTooltip="Cerrar sesión actual"
+                class="btn btn-outline-secondary btn-sm bg-white bg-opacity-50"
                 (click)="logout()"
               >
-                <mat-icon>logout</mat-icon>
-                <span class="logout-label">Salir</span>
+                <i class="bi bi-box-arrow-right me-1"></i>
+                <span class="d-none d-sm-inline">Salir</span>
               </button>
             </div>
           }
-        </mat-toolbar>
+        </header>
 
-        <main class="main-body">
-          <div class="main-inner">
+        <main class="p-3 p-md-4 flex-grow-1">
+          <div class="container-xl px-0">
             <router-outlet></router-outlet>
           </div>
         </main>
-      </mat-sidenav-content>
-    </mat-sidenav-container>
+      </div>
+    </div>
   `,
   styles: [
     `
-      .layout-container {
-        height: 100vh;
-      }
-
-      .layout-sidenav {
-        width: 268px;
-        background: var(--zegel-sidenav-bg);
-        border-right: 3px solid var(--zegel-primary-border);
-        color: var(--zegel-text);
-      }
-
-      .sidenav-inner {
+      .shell-wrapper {
+        min-height: 100vh;
         display: flex;
-        flex-direction: column;
-        height: 100%;
+      }
+
+      .glass-sidebar {
+        width: 268px;
+        flex-shrink: 0;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border-right: 1px solid rgba(255, 255, 255, 0.12);
+        color: #f8fafc;
+        position: sticky;
+        top: 0;
+        height: 100vh;
       }
 
       .brand-header {
         display: flex;
         align-items: center;
         gap: 12px;
-        height: 76px;
+        height: 72px;
         padding: 0 20px;
-        border-bottom: 2px solid var(--zegel-primary-border);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .brand-logo {
-        width: 42px;
-        height: 42px;
-        border-radius: var(--zegel-radius-sm);
-        background: var(--zegel-hero-bg);
-        color: var(--zegel-hero-text);
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: var(--zegel-clay-shadow-sm);
-      }
-
-      .brand-text {
-        display: flex;
-        flex-direction: column;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
       }
 
       .brand-title {
-        font-size: 16px;
+        font-size: 1rem;
         font-weight: 700;
-        color: var(--zegel-text);
+        color: #ffffff;
         line-height: 1.2;
       }
 
       .brand-subtitle {
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--zegel-muted);
-        letter-spacing: 0.02em;
+        font-size: 0.7rem;
+        color: #94a3b8;
       }
 
-      .nav-section-label {
+      .nav-label {
         padding: 18px 20px 8px;
-        font-size: 11px;
+        font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--zegel-muted);
+        color: #94a3b8;
       }
 
-      .nav-list {
-        padding: 0 12px;
+      .glass-nav-link {
         display: flex;
-        flex-direction: column;
-        gap: 6px;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        color: #cbd5e1;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border: 1px solid transparent;
+        transition: all 150ms ease;
       }
 
-      .nav-item {
-        border-radius: var(--zegel-radius-sm) !important;
-        border: 2px solid transparent;
-        color: var(--zegel-text) !important;
-        --mdc-list-list-item-label-text-color: var(--zegel-text);
-        --mdc-list-list-item-leading-icon-color: var(--zegel-muted);
-        transition: transform 180ms var(--zegel-ease-clay), background-color 150ms ease;
+      .glass-nav-link:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
       }
 
-      .nav-item:hover {
-        background-color: var(--zegel-surface) !important;
-        border-color: var(--zegel-primary-border);
-        transform: translateX(2px);
+      .glass-nav-link.active {
+        background: rgba(59, 130, 246, 0.25);
+        border-color: rgba(96, 165, 250, 0.35);
+        color: #ffffff;
+        font-weight: 600;
       }
 
-      .active-nav-item {
-        background: var(--zegel-surface) !important;
-        border: 2px solid var(--zegel-primary-border) !important;
-        box-shadow: var(--zegel-clay-shadow-sm);
-        --mdc-list-list-item-label-text-color: var(--zegel-primary-dark);
-        --mdc-list-list-item-leading-icon-color: var(--zegel-primary);
-        font-weight: 700 !important;
+      .glass-nav-link.active i {
+        color: #93c5fd;
       }
 
-      .sidenav-footer {
-        margin-top: auto;
-        padding: 16px;
-        border-top: 2px solid var(--zegel-primary-border);
-      }
-
-      .user-card {
+      .sidebar-user-card {
         display: flex;
         align-items: center;
         gap: 10px;
         padding: 10px;
-        border-radius: var(--zegel-radius-sm);
-        background: var(--zegel-surface);
-        border: 2px solid var(--zegel-primary-border);
-        box-shadow: var(--zegel-clay-shadow-sm);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
       }
 
       .user-avatar {
         width: 36px;
         height: 36px;
-        border-radius: 12px;
-        background: var(--zegel-hero-bg);
-        color: var(--zegel-hero-text);
-        font-size: 13px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+        color: #ffffff;
+        font-size: 0.8rem;
         font-weight: 700;
         display: flex;
         align-items: center;
@@ -291,118 +287,59 @@ const MENU_ITEMS: NavMenuItem[] = [
         flex-shrink: 0;
       }
 
-      .user-card-meta {
-        display: flex;
-        flex-direction: column;
+      .text-secondary-light {
+        color: #94a3b8;
+        font-size: 0.72rem;
+      }
+
+      .mobile-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1040;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+      }
+
+      .mobile-drawer {
+        height: 100vh;
+      }
+
+      .main-area {
+        flex: 1 1 auto;
         min-width: 0;
-      }
-
-      .user-card-name {
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--zegel-text);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .user-card-role {
-        font-size: 11px;
-        font-weight: 500;
-        color: var(--zegel-muted);
-      }
-
-      .layout-content {
         display: flex;
         flex-direction: column;
-        background: var(--zegel-bg);
       }
 
-      .layout-toolbar {
+      .glass-topbar {
         position: sticky;
         top: 0;
         z-index: 10;
-        height: 68px;
-        background: var(--zegel-surface);
-        color: var(--zegel-text);
-        border-bottom: 3px solid var(--zegel-primary-border);
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
-      }
-
-      .toolbar-brand-mobile {
-        display: none;
-        font-size: 16px;
-        font-weight: 700;
-        margin-left: 8px;
-      }
-
-      .toolbar-spacer {
-        flex: 1 1 auto;
-      }
-
-      .user-info {
+        height: 64px;
         display: flex;
         align-items: center;
-        gap: 12px;
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.7);
       }
 
-      .user-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--zegel-text);
-      }
-
-      .role-badge {
+      .role-pill {
         padding: 4px 12px;
-        border-radius: var(--zegel-radius-pill);
+        border-radius: 9999px;
         background: var(--zegel-primary-soft);
         color: var(--zegel-primary-dark);
-        border: 2px solid var(--zegel-primary-border);
-        box-shadow: var(--zegel-clay-shadow-sm);
-        font-size: 12px;
+        border: 1px solid var(--zegel-primary-border);
+        font-size: 0.75rem;
         font-weight: 700;
-      }
-
-      .logout-btn {
-        border: 2px solid var(--zegel-primary-border) !important;
-        background: var(--zegel-surface-soft) !important;
-        color: var(--zegel-text) !important;
-        border-radius: var(--zegel-radius-sm) !important;
-        box-shadow: var(--zegel-clay-shadow-sm);
-      }
-
-      .main-body {
-        padding: 28px;
-        flex: 1 1 auto;
-      }
-
-      .main-inner {
-        max-width: 1280px;
-        margin: 0 auto;
-      }
-
-      @media (max-width: 959px) {
-        .toolbar-brand-mobile {
-          display: inline;
-        }
-
-        .user-name {
-          display: none;
-        }
-
-        .main-body {
-          padding: 16px;
-        }
       }
     `,
   ],
 })
 export class MainLayoutComponent {
   private readonly authService = inject(AuthService);
-  private readonly breakpointObserver = inject(BreakpointObserver);
-  private readonly destroyRef = inject(DestroyRef);
 
-  readonly isMobile = signal(false);
+  readonly mobileMenuOpen = signal(false);
   readonly currentUser$ = this.authService.currentUser$;
   readonly visibleMenuItems$ = this.currentUser$.pipe(
     map((user) => {
@@ -412,13 +349,6 @@ export class MainLayoutComponent {
       return MENU_ITEMS.filter((item) => item.roles.includes(user.role));
     }),
   );
-
-  constructor() {
-    this.breakpointObserver
-      .observe(['(max-width: 959px)'])
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((state) => this.isMobile.set(state.matches));
-  }
 
   getInitials(name: string): string {
     return name

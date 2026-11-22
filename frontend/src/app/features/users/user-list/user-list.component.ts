@@ -1,19 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { filter, switchMap } from 'rxjs';
 import { User, UserPayload } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { UserService } from '../../../core/services/user.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { RoleLabelPipe } from '../../../shared/pipes/role-label.pipe';
@@ -25,224 +15,178 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
   imports: [
     DatePipe,
     FormsModule,
-    MatCardModule,
-    MatTableModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatTooltipModule,
     RoleLabelPipe,
+    UserFormDialogComponent,
+    ConfirmDialogComponent,
   ],
   template: `
-    <div class="users-container">
-      <header class="page-header">
+    <div class="d-flex flex-column gap-4">
+      <header class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-          <h1>Gestión de Usuarios</h1>
-          <p class="subtitle">Administración de cuentas, roles y accesos</p>
+          <h1 class="h3 fw-bold mb-1">Gestión de Usuarios</h1>
+          <p class="text-muted small mb-0">Administración de cuentas, roles y accesos</p>
         </div>
 
-        <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
-          <mat-icon>person_add</mat-icon>
-          Nuevo Usuario
+        <button
+          type="button"
+          class="btn btn-primary btn-sm px-3"
+          (click)="openCreateDialog()"
+        >
+          <i class="bi bi-person-plus-fill me-1"></i>Nuevo Usuario
         </button>
       </header>
 
-      <mat-card class="table-card">
-        <mat-card-content>
-          <div class="toolbar-row">
-            <mat-form-field appearance="outline" class="search-field">
-              <mat-label>Buscar por nombre, correo o rol</mat-label>
-              <input
-                matInput
-                [ngModel]="searchTerm()"
-                (ngModelChange)="searchTerm.set($event)"
-                placeholder="Ej. Ana, @zegel.edu.pe o profesor"
-              />
-              <mat-icon matPrefix>search</mat-icon>
-              @if (searchTerm()) {
-                <button
-                  mat-icon-button
-                  matSuffix
-                  type="button"
-                  aria-label="Limpiar búsqueda"
-                  (click)="searchTerm.set('')"
-                >
-                  <mat-icon>close</mat-icon>
-                </button>
-              }
-            </mat-form-field>
-
-            <div class="filter-pills" role="group" aria-label="Filtrar por rol">
-              @for (opt of roleFilterOptions; track opt.value) {
-                <button
-                  type="button"
-                  class="filter-pill"
-                  [class.active]="roleFilter() === opt.value"
-                  (click)="roleFilter.set(opt.value)"
-                >
-                  {{ opt.label }}
-                </button>
-              }
-            </div>
+      <div class="glass-card p-3 p-md-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+          <div class="input-group search-group">
+            <span class="input-group-text bg-white bg-opacity-75">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event)"
+              placeholder="Buscar por nombre, correo o rol..."
+            />
+            @if (searchTerm()) {
+              <button
+                type="button"
+                class="btn btn-outline-secondary bg-white bg-opacity-75"
+                aria-label="Limpiar búsqueda"
+                (click)="searchTerm.set('')"
+              >
+                <i class="bi bi-x-lg"></i>
+              </button>
+            }
           </div>
 
-          @if (loading()) {
-            <div class="loading-state">
-              <mat-spinner diameter="36"></mat-spinner>
-              <span>Cargando usuarios...</span>
-            </div>
-          } @else if (filteredUsers().length === 0) {
-            <div class="empty-state">
-              <mat-icon>group</mat-icon>
-              <p>No se encontraron usuarios con el filtro actual.</p>
-            </div>
-          } @else {
-            <div class="table-wrapper">
-              <table mat-table [dataSource]="filteredUsers()" class="users-table">
-                <ng-container matColumnDef="id">
-                  <th mat-header-cell *matHeaderCellDef>ID</th>
-                  <td mat-cell *matCellDef="let user">{{ user.id }}</td>
-                </ng-container>
+          <div class="d-flex flex-wrap gap-2" role="group" aria-label="Filtrar por rol">
+            @for (opt of roleFilterOptions; track opt.value) {
+              <button
+                type="button"
+                class="filter-pill"
+                [class.active]="roleFilter() === opt.value"
+                (click)="roleFilter.set(opt.value)"
+              >
+                {{ opt.label }}
+              </button>
+            }
+          </div>
+        </div>
 
-                <ng-container matColumnDef="name">
-                  <th mat-header-cell *matHeaderCellDef>Nombre</th>
-                  <td mat-cell *matCellDef="let user">
-                    <strong>{{ user.name }}</strong>
-                    @if (isCurrentUser(user)) {
-                      <span class="self-badge">Tú</span>
-                    }
-                  </td>
-                </ng-container>
+        @if (loading()) {
+          <div class="text-center py-5 text-muted">
+            <div class="spinner-border text-primary mb-2" role="status"></div>
+            <div>Cargando usuarios...</div>
+          </div>
+        } @else if (filteredUsers().length === 0) {
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-people fs-1 d-block mb-2 opacity-50"></i>
+            <p class="mb-0">No se encontraron usuarios con el filtro actual.</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table glass-table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Correo</th>
+                  <th>Rol</th>
+                  <th>Registro</th>
+                  <th class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of filteredUsers(); track user.id) {
+                  <tr>
+                    <td class="tabular-nums">{{ user.id }}</td>
+                    <td>
+                      <strong>{{ user.name }}</strong>
+                      @if (isCurrentUser(user)) {
+                        <span class="self-badge">Tú</span>
+                      }
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                      <span class="role-chip" [attr.data-role]="user.role">
+                        {{ user.role | roleLabel }}
+                      </span>
+                    </td>
+                    <td class="small text-muted">
+                      {{ user.created_at ? (user.created_at | date: 'dd/MM/yyyy HH:mm') : '—' }}
+                    </td>
+                    <td class="text-end text-nowrap">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary me-1"
+                        title="Editar"
+                        aria-label="Editar usuario"
+                        (click)="openEditDialog(user)"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
 
-                <ng-container matColumnDef="email">
-                  <th mat-header-cell *matHeaderCellDef>Correo</th>
-                  <td mat-cell *matCellDef="let user">{{ user.email }}</td>
-                </ng-container>
-
-                <ng-container matColumnDef="role">
-                  <th mat-header-cell *matHeaderCellDef>Rol</th>
-                  <td mat-cell *matCellDef="let user">
-                    <span class="role-chip" [attr.data-role]="user.role">
-                      {{ user.role | roleLabel }}
-                    </span>
-                  </td>
-                </ng-container>
-
-                <ng-container matColumnDef="created_at">
-                  <th mat-header-cell *matHeaderCellDef>Fecha de registro</th>
-                  <td mat-cell *matCellDef="let user">
-                    {{ user.created_at ? (user.created_at | date: 'dd/MM/yyyy HH:mm') : '—' }}
-                  </td>
-                </ng-container>
-
-                <ng-container matColumnDef="actions">
-                  <th mat-header-cell *matHeaderCellDef>Acciones</th>
-                  <td mat-cell *matCellDef="let user" class="actions-cell">
-                    <button
-                      mat-icon-button
-                      color="primary"
-                      type="button"
-                      matTooltip="Editar"
-                      aria-label="Editar usuario"
-                      (click)="openEditDialog(user)"
-                    >
-                      <mat-icon>edit</mat-icon>
-                    </button>
-
-                    <button
-                      mat-icon-button
-                      color="warn"
-                      class="delete-action-btn"
-                      type="button"
-                      [disabled]="isCurrentUser(user)"
-                      [matTooltip]="
-                        isCurrentUser(user)
-                          ? 'No puedes eliminar tu propia cuenta'
-                          : 'Eliminar'
-                      "
-                      aria-label="Eliminar usuario"
-                      (click)="confirmDelete(user)"
-                    >
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-              </table>
-            </div>
-          }
-        </mat-card-content>
-      </mat-card>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        [disabled]="isCurrentUser(user)"
+                        [title]="isCurrentUser(user) ? 'No puedes eliminar tu propia cuenta' : 'Eliminar'"
+                        aria-label="Eliminar usuario"
+                        (click)="deleteCandidate.set(user)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
     </div>
+
+    <!-- Create / Edit User Modal -->
+    @if (formModalOpen()) {
+      <app-user-form-dialog
+        [user]="editingUser()"
+        (saved)="onFormSaved($event)"
+        (cancelled)="closeFormModal()"
+      />
+    }
+
+    <!-- Delete Confirmation Modal -->
+    @if (deleteCandidate(); as user) {
+      <app-confirm-dialog
+        title="Eliminar usuario"
+        [message]="'¿Estás seguro de eliminar al usuario &quot;' + user.name + '&quot; (' + user.email + ')?'"
+        confirmText="Eliminar"
+        (confirmed)="onDeleteConfirmed($event)"
+      />
+    }
   `,
   styles: [
     `
-      .users-container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 16px;
-      }
-
-      .page-header h1 {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--zegel-text);
-      }
-
-      .subtitle {
-        margin: 4px 0 0;
-        color: var(--zegel-muted);
-        font-size: 14px;
-      }
-
-      .toolbar-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-
-      .search-field {
-        width: 100%;
-        max-width: 360px;
-      }
-
-      .filter-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+      .search-group {
+        max-width: 340px;
       }
 
       .filter-pill {
-        border: 2px solid var(--zegel-border);
-        background: var(--zegel-surface);
+        border: 1px solid var(--zegel-border);
+        background: rgba(255, 255, 255, 0.72);
         color: var(--zegel-muted);
-        border-radius: var(--zegel-radius-pill);
-        padding: 6px 14px;
-        font-size: 12px;
+        border-radius: 9999px;
+        padding: 5px 14px;
+        font-size: 0.78rem;
         font-weight: 600;
         cursor: pointer;
-        box-shadow: var(--zegel-clay-shadow-sm);
-        transition: all 150ms var(--zegel-ease-clay);
+        transition: all 150ms ease;
       }
 
       .filter-pill:hover {
-        background: var(--zegel-surface-soft);
+        background: #ffffff;
         color: var(--zegel-text);
       }
 
@@ -252,36 +196,28 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
         border-color: var(--zegel-primary-border);
       }
 
-      .table-wrapper {
-        overflow-x: auto;
-      }
-
-      .users-table {
-        width: 100%;
-      }
-
       .self-badge {
         display: inline-block;
         margin-left: 8px;
-        padding: 2px 8px;
-        border-radius: var(--zegel-radius-pill);
+        padding: 1px 8px;
+        border-radius: 9999px;
         background-color: var(--zegel-primary-soft);
         color: var(--zegel-primary-dark);
         border: 1px solid var(--zegel-primary-border);
-        font-size: 11px;
+        font-size: 0.7rem;
         font-weight: 700;
       }
 
       .role-chip {
         display: inline-flex;
         align-items: center;
-        padding: 3px 10px;
-        border-radius: var(--zegel-radius-pill);
-        font-size: 12px;
+        padding: 2px 10px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
         font-weight: 600;
         background-color: var(--zegel-neutral-soft);
         color: var(--zegel-text);
-        border: 2px solid var(--zegel-neutral-border);
+        border: 1px solid var(--zegel-neutral-border);
       }
 
       .role-chip[data-role='admin'] {
@@ -301,40 +237,23 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
         color: var(--zegel-success);
         border-color: var(--zegel-success-border);
       }
-
-      .actions-cell {
-        white-space: nowrap;
-      }
-
-      .delete-action-btn:not(:disabled) {
-        color: var(--mat-sys-error);
-      }
-
-      .loading-state,
-      .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 40px 16px;
-        color: #757575;
-      }
     `,
   ],
 })
 export class UserListComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
-  private readonly dialog = inject(MatDialog);
-  private readonly snackBar = inject(MatSnackBar);
-
-  readonly displayedColumns = ['id', 'name', 'email', 'role', 'created_at', 'actions'];
+  private readonly toast = inject(ToastService);
 
   readonly users = signal<User[]>([]);
   readonly loading = signal(true);
   readonly searchTerm = signal('');
   readonly roleFilter = signal<'all' | 'admin' | 'profesor' | 'estudiante'>('all');
+
+  readonly formModalOpen = signal(false);
+  readonly editingUser = signal<User | null>(null);
+  readonly deleteCandidate = signal<User | null>(null);
+
   private readonly currentUserId = this.authService.getCurrentUser()?.id ?? null;
 
   readonly roleFilterOptions: Array<{
@@ -383,86 +302,71 @@ export class UserListComponent implements OnInit {
   }
 
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(UserFormDialogComponent, {
-      width: '500px',
-      data: null,
-    });
-
-    dialogRef
-      .afterClosed()
-      .pipe(
-        filter((payload): payload is UserPayload => !!payload),
-        switchMap((payload) => this.userService.createUser(payload)),
-      )
-      .subscribe({
-        next: (created) => {
-          this.users.update((list) => [created, ...list]);
-          this.snackBar.open('Usuario creado correctamente.', 'Cerrar', { duration: 3000 });
-        },
-        error: () => {
-          // errorInterceptor ya muestra el mensaje de error del backend
-        },
-      });
+    this.editingUser.set(null);
+    this.formModalOpen.set(true);
   }
 
   openEditDialog(user: User): void {
-    const dialogRef = this.dialog.open(UserFormDialogComponent, {
-      width: '500px',
-      data: { user },
-    });
+    this.editingUser.set(user);
+    this.formModalOpen.set(true);
+  }
 
-    dialogRef
-      .afterClosed()
-      .pipe(
-        filter((payload): payload is UserPayload => !!payload),
-        switchMap((payload) => this.userService.updateUser(user.id, payload)),
-      )
-      .subscribe({
+  closeFormModal(): void {
+    this.formModalOpen.set(false);
+    this.editingUser.set(null);
+  }
+
+  onFormSaved(payload: UserPayload): void {
+    const editing = this.editingUser();
+    this.closeFormModal();
+
+    if (editing) {
+      this.userService.updateUser(editing.id, payload).subscribe({
         next: (updated) => {
           this.users.update((list) =>
             list.map((item) => (item.id === updated.id ? updated : item)),
           );
-          this.snackBar.open('Usuario actualizado correctamente.', 'Cerrar', {
-            duration: 3000,
-          });
+          this.toast.show('Usuario actualizado correctamente.', 'success');
         },
         error: () => {
           // errorInterceptor ya muestra el mensaje de error del backend
         },
-      });
-  }
-
-  confirmDelete(user: User): void {
-    if (this.isCurrentUser(user)) {
-      this.snackBar.open('No puedes eliminar tu propia cuenta de administrador.', 'Cerrar', {
-        duration: 4000,
       });
       return;
     }
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Eliminar usuario',
-        message: `¿Estás seguro de eliminar al usuario "${user.name}" (${user.email})?`,
-        confirmText: 'Eliminar',
+    this.userService.createUser(payload).subscribe({
+      next: (created) => {
+        this.users.update((list) => [created, ...list]);
+        this.toast.show('Usuario creado correctamente.', 'success');
+      },
+      error: () => {
+        // errorInterceptor ya muestra el mensaje de error del backend
       },
     });
+  }
 
-    dialogRef
-      .afterClosed()
-      .pipe(
-        filter((confirmed) => confirmed === true),
-        switchMap(() => this.userService.deleteUser(user.id)),
-      )
-      .subscribe({
-        next: () => {
-          this.users.update((list) => list.filter((item) => item.id !== user.id));
-          this.snackBar.open('Usuario eliminado.', 'Cerrar', { duration: 3000 });
-        },
-        error: () => {
-          // errorInterceptor ya muestra el mensaje de error del backend
-        },
-      });
+  onDeleteConfirmed(confirmed: boolean): void {
+    const user = this.deleteCandidate();
+    this.deleteCandidate.set(null);
+
+    if (!confirmed || !user) {
+      return;
+    }
+
+    if (this.isCurrentUser(user)) {
+      this.toast.show('No puedes eliminar tu propia cuenta activa.', 'warning');
+      return;
+    }
+
+    this.userService.deleteUser(user.id).subscribe({
+      next: () => {
+        this.users.update((list) => list.filter((item) => item.id !== user.id));
+        this.toast.show('Usuario eliminado.', 'success');
+      },
+      error: () => {
+        // errorInterceptor ya muestra el mensaje de error del backend (ej. 409)
+      },
+    });
   }
 }

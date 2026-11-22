@@ -1,20 +1,9 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatListModule } from '@angular/material/list';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
-import { filter, switchMap } from 'rxjs';
 import { Course, CoursePayload } from '../../../core/models/course.model';
 import { CourseService } from '../../../core/services/course.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { HasRoleDirective } from '../../../shared/directives/has-role.directive';
 import { HighlightStatusDirective } from '../../../shared/directives/highlight-status.directive';
@@ -22,350 +11,257 @@ import { CourseStatusPipe } from '../../../shared/pipes/course-status.pipe';
 import { CourseFormDialogComponent } from '../course-form-dialog/course-form-dialog.component';
 
 @Component({
-  selector: 'app-course-detail-dialog',
-  standalone: true,
-  imports: [
-    MatDialogModule,
-    MatButtonModule,
-    MatListModule,
-    MatIconModule,
-    CourseStatusPipe,
-    HighlightStatusDirective,
-  ],
-  template: `
-    <h2 mat-dialog-title>{{ course.code }} - {{ course.title }}</h2>
-    <mat-dialog-content class="detail-content">
-      <div class="detail-meta">
-        <span><strong>Créditos:</strong> {{ course.credits }}</span>
-        <span><strong>Profesor:</strong> {{ course.teacher_name || 'Sin asignar' }}</span>
-        <span [appHighlightStatus]="course.status">{{ course.status | courseStatus }}</span>
-      </div>
-
-      <p class="detail-description">
-        {{ course.description || 'Sin descripción registrada.' }}
-      </p>
-
-      <h3>Módulos ({{ course.modules.length }})</h3>
-      @if (course.modules.length === 0) {
-        <p class="empty-text">Este curso aún no tiene módulos registrados.</p>
-      } @else {
-        <mat-list>
-          @for (mod of course.modules; track $index) {
-            <mat-list-item>
-              <mat-icon matListItemIcon>article</mat-icon>
-              <span matListItemTitle>{{ $index + 1 }}. {{ mod.title }}</span>
-              <span matListItemLine>{{ mod.hours }} horas</span>
-            </mat-list-item>
-          }
-        </mat-list>
-      }
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close type="button">Cerrar</button>
-    </mat-dialog-actions>
-  `,
-  styles: [
-    `
-      .detail-content {
-        min-width: 440px;
-        max-width: 100%;
-      }
-
-      .detail-meta {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 12px;
-        font-size: 14px;
-      }
-
-      .detail-description {
-        color: #424242;
-        margin-bottom: 16px;
-      }
-
-      .empty-text {
-        color: #757575;
-        font-size: 13px;
-      }
-
-      @media (max-width: 540px) {
-        .detail-content {
-          min-width: auto;
-        }
-      }
-    `,
-  ],
-})
-export class CourseDetailDialogComponent {
-  readonly course = inject<Course>(MAT_DIALOG_DATA);
-}
-
-@Component({
   selector: 'app-course-list',
   standalone: true,
   imports: [
     FormsModule,
     RouterLink,
-    MatCardModule,
-    MatTableModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatTooltipModule,
     HasRoleDirective,
     HighlightStatusDirective,
     CourseStatusPipe,
+    CourseFormDialogComponent,
+    ConfirmDialogComponent,
   ],
   template: `
-    <div class="courses-container">
-      <header class="page-header">
+    <div class="d-flex flex-column gap-4">
+      <header class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-          <h1>Gestión de Cursos</h1>
-          <p class="subtitle">Catálogo académico de cursos y módulos</p>
+          <h1 class="h3 fw-bold mb-1">Gestión de Cursos</h1>
+          <p class="text-muted small mb-0">Catálogo académico de cursos y módulos</p>
         </div>
 
-        <div class="header-actions">
+        <div class="d-flex flex-wrap gap-2">
           <a
             *appHasRole="['estudiante']"
-            mat-stroked-button
-            color="primary"
+            class="btn btn-outline-primary bg-white bg-opacity-50 btn-sm"
             routerLink="/courses/history"
           >
-            <mat-icon>grade</mat-icon>
-            Ver historial de notas
+            <i class="bi bi-award me-1"></i>Ver historial de notas
           </a>
 
           <button
             *appHasRole="['admin']"
-            mat-flat-button
-            color="primary"
             type="button"
+            class="btn btn-primary btn-sm px-3"
             (click)="openCreateDialog()"
           >
-            <mat-icon>add</mat-icon>
-            Nuevo Curso
+            <i class="bi bi-plus-lg me-1"></i>Nuevo Curso
           </button>
         </div>
       </header>
 
-      <mat-card class="table-card">
-        <mat-card-content>
-          <div class="toolbar-row">
-            <mat-form-field appearance="outline" class="search-field">
-              <mat-label>Buscar por código o título</mat-label>
-              <input
-                matInput
-                [ngModel]="searchTerm()"
-                (ngModelChange)="searchTerm.set($event)"
-                placeholder="Ej. ZEG-101 o Interfaces"
-              />
-              <mat-icon matPrefix>search</mat-icon>
-              @if (searchTerm()) {
-                <button
-                  mat-icon-button
-                  matSuffix
-                  type="button"
-                  aria-label="Limpiar búsqueda"
-                  (click)="searchTerm.set('')"
-                >
-                  <mat-icon>close</mat-icon>
-                </button>
-              }
-            </mat-form-field>
-
-            <div class="filter-pills" role="group" aria-label="Filtrar por estado">
-              @for (opt of statusFilterOptions; track opt.value) {
-                <button
-                  type="button"
-                  class="filter-pill"
-                  [class.active]="statusFilter() === opt.value"
-                  (click)="statusFilter.set(opt.value)"
-                >
-                  {{ opt.label }}
-                </button>
-              }
-            </div>
+      <div class="glass-card p-3 p-md-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+          <div class="input-group search-group">
+            <span class="input-group-text bg-white bg-opacity-75">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event)"
+              placeholder="Buscar por código o título..."
+            />
+            @if (searchTerm()) {
+              <button
+                type="button"
+                class="btn btn-outline-secondary bg-white bg-opacity-75"
+                aria-label="Limpiar búsqueda"
+                (click)="searchTerm.set('')"
+              >
+                <i class="bi bi-x-lg"></i>
+              </button>
+            }
           </div>
 
-          @if (loading()) {
-            <div class="loading-state">
-              <mat-spinner diameter="36"></mat-spinner>
-              <span>Cargando cursos...</span>
-            </div>
-          } @else if (filteredCourses().length === 0) {
-            <div class="empty-state">
-              <mat-icon>menu_book</mat-icon>
-              <p>No se encontraron cursos con el filtro actual.</p>
-            </div>
-          } @else {
-            <div class="table-wrapper">
-              <table mat-table [dataSource]="filteredCourses()" class="courses-table">
-                <ng-container matColumnDef="code">
-                  <th mat-header-cell *matHeaderCellDef>Código</th>
-                  <td mat-cell *matCellDef="let course">
-                    <strong>{{ course.code }}</strong>
-                  </td>
-                </ng-container>
+          <div class="d-flex flex-wrap gap-2" role="group" aria-label="Filtrar por estado">
+            @for (opt of statusFilterOptions; track opt.value) {
+              <button
+                type="button"
+                class="filter-pill"
+                [class.active]="statusFilter() === opt.value"
+                (click)="statusFilter.set(opt.value)"
+              >
+                {{ opt.label }}
+              </button>
+            }
+          </div>
+        </div>
 
-                <ng-container matColumnDef="title">
-                  <th mat-header-cell *matHeaderCellDef>Título</th>
-                  <td mat-cell *matCellDef="let course">{{ course.title }}</td>
-                </ng-container>
+        @if (loading()) {
+          <div class="text-center py-5 text-muted">
+            <div class="spinner-border text-primary mb-2" role="status"></div>
+            <div>Cargando cursos...</div>
+          </div>
+        } @else if (filteredCourses().length === 0) {
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-journal-bookmark fs-1 d-block mb-2 opacity-50"></i>
+            <p class="mb-0">No se encontraron cursos con el filtro actual.</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table glass-table table-hover">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Título</th>
+                  <th>Créditos</th>
+                  <th>Profesor</th>
+                  <th>Estado</th>
+                  <th>Módulos</th>
+                  <th class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (course of filteredCourses(); track course.id) {
+                  <tr>
+                    <td><strong>{{ course.code }}</strong></td>
+                    <td>{{ course.title }}</td>
+                    <td class="tabular-nums">{{ course.credits }}</td>
+                    <td>{{ course.teacher_name || 'Sin asignar' }}</td>
+                    <td>
+                      <span [appHighlightStatus]="course.status">
+                        {{ course.status | courseStatus }}
+                      </span>
+                    </td>
+                    <td class="tabular-nums">{{ course.modules.length }}</td>
+                    <td class="text-end text-nowrap">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-secondary me-1"
+                        title="Ver detalle"
+                        aria-label="Ver detalle"
+                        (click)="detailCourse.set(course)"
+                      >
+                        <i class="bi bi-eye"></i>
+                      </button>
 
-                <ng-container matColumnDef="credits">
-                  <th mat-header-cell *matHeaderCellDef>Créditos</th>
-                  <td mat-cell *matCellDef="let course">{{ course.credits }}</td>
-                </ng-container>
+                      <button
+                        *appHasRole="['admin', 'profesor']"
+                        type="button"
+                        class="btn btn-sm btn-outline-primary me-1"
+                        title="Editar"
+                        aria-label="Editar curso"
+                        (click)="openEditDialog(course)"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
 
-                <ng-container matColumnDef="teacher_name">
-                  <th mat-header-cell *matHeaderCellDef>Profesor</th>
-                  <td mat-cell *matCellDef="let course">
-                    {{ course.teacher_name || 'Sin asignar' }}
-                  </td>
-                </ng-container>
-
-                <ng-container matColumnDef="status">
-                  <th mat-header-cell *matHeaderCellDef>Estado</th>
-                  <td mat-cell *matCellDef="let course">
-                    <span [appHighlightStatus]="course.status">
-                      {{ course.status | courseStatus }}
-                    </span>
-                  </td>
-                </ng-container>
-
-                <ng-container matColumnDef="modules">
-                  <th mat-header-cell *matHeaderCellDef>Módulos</th>
-                  <td mat-cell *matCellDef="let course">{{ course.modules.length }}</td>
-                </ng-container>
-
-                <ng-container matColumnDef="actions">
-                  <th mat-header-cell *matHeaderCellDef>Acciones</th>
-                  <td mat-cell *matCellDef="let course" class="actions-cell">
-                    <button
-                      mat-icon-button
-                      type="button"
-                      matTooltip="Ver detalle"
-                      (click)="openDetailDialog(course)"
-                    >
-                      <mat-icon>visibility</mat-icon>
-                    </button>
-
-                    <button
-                      *appHasRole="['admin', 'profesor']"
-                      mat-icon-button
-                      color="primary"
-                      type="button"
-                      matTooltip="Editar"
-                      (click)="openEditDialog(course)"
-                    >
-                      <mat-icon>edit</mat-icon>
-                    </button>
-
-                    <button
-                      *appHasRole="['admin']"
-                      mat-icon-button
-                      color="warn"
-                      class="delete-action-btn"
-                      type="button"
-                      matTooltip="Eliminar"
-                      (click)="confirmDelete(course)"
-                    >
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-              </table>
-            </div>
-          }
-        </mat-card-content>
-      </mat-card>
+                      <button
+                        *appHasRole="['admin']"
+                        type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        title="Eliminar"
+                        aria-label="Eliminar curso"
+                        (click)="deleteCandidate.set(course)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
     </div>
+
+    <!-- Course Detail Modal -->
+    @if (detailCourse(); as course) {
+      <div
+        class="glass-modal-backdrop"
+        role="dialog"
+        aria-modal="true"
+        (click)="detailCourse.set(null)"
+      >
+        <div class="glass-modal detail-modal p-4" (click)="$event.stopPropagation()">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="fw-bold mb-1">{{ course.code }} - {{ course.title }}</h5>
+              <div class="d-flex flex-wrap align-items-center gap-3 small text-muted">
+                <span><strong>Créditos:</strong> {{ course.credits }}</span>
+                <span><strong>Profesor:</strong> {{ course.teacher_name || 'Sin asignar' }}</span>
+                <span [appHighlightStatus]="course.status">{{ course.status | courseStatus }}</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Cerrar"
+              (click)="detailCourse.set(null)"
+            ></button>
+          </div>
+
+          <p class="small text-secondary mb-3">
+            {{ course.description || 'Sin descripción registrada.' }}
+          </p>
+
+          <h6 class="fw-bold small text-uppercase text-muted mb-2">
+            Módulos ({{ course.modules.length }})
+          </h6>
+          @if (course.modules.length === 0) {
+            <p class="text-muted small mb-0">Este curso aún no tiene módulos registrados.</p>
+          } @else {
+            <ul class="list-group list-group-flush mb-3">
+              @for (mod of course.modules; track $index) {
+                <li class="list-group-item bg-transparent px-0 d-flex justify-content-between align-items-center small">
+                  <span><i class="bi bi-file-text me-2 text-primary"></i>{{ $index + 1 }}. {{ mod.title }}</span>
+                  <span class="badge text-bg-light border">{{ mod.hours }} h</span>
+                </li>
+              }
+            </ul>
+          }
+
+          <div class="text-end">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="detailCourse.set(null)">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Create / Edit Course Modal -->
+    @if (formModalOpen()) {
+      <app-course-form-dialog
+        [course]="editingCourse()"
+        (saved)="onFormSaved($event)"
+        (cancelled)="closeFormModal()"
+      />
+    }
+
+    <!-- Delete Confirmation Modal -->
+    @if (deleteCandidate(); as course) {
+      <app-confirm-dialog
+        title="Eliminar curso"
+        [message]="'¿Estás seguro de eliminar el curso &quot;' + course.code + ' - ' + course.title + '&quot;?'"
+        confirmText="Eliminar"
+        (confirmed)="onDeleteConfirmed($event)"
+      />
+    }
   `,
   styles: [
     `
-      .courses-container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 16px;
-      }
-
-      .page-header h1 {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--zegel-text);
-      }
-
-      .subtitle {
-        margin: 4px 0 0;
-        color: var(--zegel-muted);
-        font-size: 14px;
-      }
-
-      .header-actions {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .header-actions a,
-      .header-actions button {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border-radius: 10px !important;
-      }
-
-      .toolbar-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-
-      .search-field {
-        width: 100%;
-        max-width: 360px;
-      }
-
-      .filter-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+      .search-group {
+        max-width: 340px;
       }
 
       .filter-pill {
-        border: 2px solid var(--zegel-border);
-        background: var(--zegel-surface);
+        border: 1px solid var(--zegel-border);
+        background: rgba(255, 255, 255, 0.72);
         color: var(--zegel-muted);
-        border-radius: var(--zegel-radius-pill);
-        padding: 6px 14px;
-        font-size: 12px;
+        border-radius: 9999px;
+        padding: 5px 14px;
+        font-size: 0.78rem;
         font-weight: 600;
         cursor: pointer;
-        box-shadow: var(--zegel-clay-shadow-sm);
-        transition: all 150ms var(--zegel-ease-clay);
+        transition: all 150ms ease;
       }
 
       .filter-pill:hover {
-        background: var(--zegel-surface-soft);
+        background: #ffffff;
         color: var(--zegel-text);
       }
 
@@ -375,54 +271,25 @@ export class CourseDetailDialogComponent {
         border-color: var(--zegel-primary-border);
       }
 
-      .table-wrapper {
-        overflow-x: auto;
-      }
-
-      .courses-table {
-        width: 100%;
-      }
-
-      .actions-cell {
-        white-space: nowrap;
-      }
-
-      .delete-action-btn:not(:disabled) {
-        color: var(--mat-sys-error);
-      }
-
-      .loading-state,
-      .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 40px 16px;
-        color: #757575;
+      .detail-modal {
+        max-width: 540px;
       }
     `,
   ],
 })
 export class CourseListComponent implements OnInit {
   private readonly courseService = inject(CourseService);
-  private readonly dialog = inject(MatDialog);
-  private readonly snackBar = inject(MatSnackBar);
-
-  readonly displayedColumns = [
-    'code',
-    'title',
-    'credits',
-    'teacher_name',
-    'status',
-    'modules',
-    'actions',
-  ];
+  private readonly toast = inject(ToastService);
 
   readonly courses = signal<Course[]>([]);
   readonly loading = signal(true);
   readonly searchTerm = signal('');
   readonly statusFilter = signal<'all' | 'active' | 'draft' | 'inactive'>('all');
+
+  readonly detailCourse = signal<Course | null>(null);
+  readonly formModalOpen = signal(false);
+  readonly editingCourse = signal<Course | null>(null);
+  readonly deleteCandidate = signal<Course | null>(null);
 
   readonly statusFilterOptions: Array<{
     value: 'all' | 'active' | 'draft' | 'inactive';
@@ -464,85 +331,67 @@ export class CourseListComponent implements OnInit {
     });
   }
 
-  openDetailDialog(course: Course): void {
-    this.dialog.open(CourseDetailDialogComponent, {
-      data: course,
-      width: '520px',
-    });
-  }
-
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(CourseFormDialogComponent, {
-      width: '620px',
-      data: null,
-    });
-
-    dialogRef
-      .afterClosed()
-      .pipe(
-        filter((payload): payload is CoursePayload => !!payload),
-        switchMap((payload) => this.courseService.createCourse(payload)),
-      )
-      .subscribe({
-        next: (created) => {
-          this.courses.update((list) => [created, ...list]);
-          this.snackBar.open('Curso creado correctamente.', 'Cerrar', { duration: 3000 });
-        },
-        error: () => {
-          // errorInterceptor ya notifica el error HTTP al usuario
-        },
-      });
+    this.editingCourse.set(null);
+    this.formModalOpen.set(true);
   }
 
   openEditDialog(course: Course): void {
-    const dialogRef = this.dialog.open(CourseFormDialogComponent, {
-      width: '620px',
-      data: { course },
-    });
+    this.editingCourse.set(course);
+    this.formModalOpen.set(true);
+  }
 
-    dialogRef
-      .afterClosed()
-      .pipe(
-        filter((payload): payload is CoursePayload => !!payload),
-        switchMap((payload) => this.courseService.updateCourse(course.id, payload)),
-      )
-      .subscribe({
+  closeFormModal(): void {
+    this.formModalOpen.set(false);
+    this.editingCourse.set(null);
+  }
+
+  onFormSaved(payload: CoursePayload): void {
+    const editing = this.editingCourse();
+    this.closeFormModal();
+
+    if (editing) {
+      this.courseService.updateCourse(editing.id, payload).subscribe({
         next: (updated) => {
           this.courses.update((list) =>
             list.map((item) => (item.id === updated.id ? updated : item)),
           );
-          this.snackBar.open('Curso actualizado correctamente.', 'Cerrar', { duration: 3000 });
+          this.toast.show('Curso actualizado correctamente.', 'success');
         },
         error: () => {
-          // errorInterceptor ya notifica el error HTTP al usuario
+          // errorInterceptor ya notifica el error HTTP
         },
       });
-  }
+      return;
+    }
 
-  confirmDelete(course: Course): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Eliminar curso',
-        message: `¿Estás seguro de eliminar el curso "${course.code} - ${course.title}"?`,
-        confirmText: 'Eliminar',
+    this.courseService.createCourse(payload).subscribe({
+      next: (created) => {
+        this.courses.update((list) => [created, ...list]);
+        this.toast.show('Curso creado correctamente.', 'success');
+      },
+      error: () => {
+        // errorInterceptor ya notifica el error HTTP
       },
     });
+  }
 
-    dialogRef
-      .afterClosed()
-      .pipe(
-        filter((confirmed) => confirmed === true),
-        switchMap(() => this.courseService.deleteCourse(course.id)),
-      )
-      .subscribe({
-        next: () => {
-          this.courses.update((list) => list.filter((item) => item.id !== course.id));
-          this.snackBar.open('Curso eliminado.', 'Cerrar', { duration: 3000 });
-        },
-        error: () => {
-          // errorInterceptor ya notifica el error HTTP al usuario
-        },
-      });
+  onDeleteConfirmed(confirmed: boolean): void {
+    const course = this.deleteCandidate();
+    this.deleteCandidate.set(null);
+
+    if (!confirmed || !course) {
+      return;
+    }
+
+    this.courseService.deleteCourse(course.id).subscribe({
+      next: () => {
+        this.courses.update((list) => list.filter((item) => item.id !== course.id));
+        this.toast.show('Curso eliminado.', 'success');
+      },
+      error: () => {
+        // errorInterceptor ya notifica el error HTTP
+      },
+    });
   }
 }

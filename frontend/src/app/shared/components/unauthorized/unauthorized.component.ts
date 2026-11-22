@@ -1,74 +1,48 @@
 import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-unauthorized',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, RouterLink],
+  imports: [RouterLink],
   template: `
-    <div class="error-page">
-      <mat-card class="error-card">
-        <mat-icon class="error-icon" color="warn">lock</mat-icon>
-        <h1 class="error-code">403</h1>
-        <h2 class="error-title">Acceso no autorizado</h2>
-        <p class="error-message">
+    <div class="min-vh-100 d-flex align-items-center justify-content-center p-4">
+      <div class="glass-card text-center p-4 p-md-5 error-card">
+        <div class="error-icon-wrap mb-3 mx-auto">
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h1 class="display-4 fw-bold mb-1 error-code">403</h1>
+        <h2 class="h4 fw-semibold mb-2">Acceso no autorizado</h2>
+        <p class="text-muted mb-4">
           No cuentas con los permisos necesarios para acceder a esta sección.
         </p>
-        <a mat-flat-button color="primary" routerLink="/dashboard">
-          Volver al Dashboard
+        <a class="btn btn-primary px-4" routerLink="/dashboard">
+          <i class="bi bi-arrow-left me-2"></i>Volver al Dashboard
         </a>
-      </mat-card>
+      </div>
     </div>
   `,
   styles: [
     `
-      .error-page {
-        min-height: 100vh;
+      .error-card {
+        max-width: 430px;
+        width: 100%;
+      }
+
+      .error-icon-wrap {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        background: var(--zegel-error-soft);
+        color: var(--zegel-error);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 24px;
-        background: var(--zegel-bg);
-      }
-
-      .error-card {
-        max-width: 420px;
-        width: 100%;
-        padding: 36px 28px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .error-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        color: var(--zegel-error);
+        font-size: 1.75rem;
       }
 
       .error-code {
-        margin: 0;
-        font-size: 56px;
-        font-weight: 700;
-        line-height: 1;
         color: var(--zegel-error);
-      }
-
-      .error-title {
-        margin: 0;
-        font-size: 22px;
-        font-weight: 600;
-      }
-
-      .error-message {
-        margin: 0 0 8px;
-        color: var(--zegel-muted);
       }
     `,
   ],

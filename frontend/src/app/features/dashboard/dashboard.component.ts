@@ -1,11 +1,5 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Course } from '../../core/models/course.model';
@@ -21,271 +15,248 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    DecimalPipe,
-    RouterLink,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatListModule,
-    MatProgressBarModule,
-    MatProgressSpinnerModule,
-    RoleLabelPipe,
-    CourseStatusPipe,
-    HighlightStatusDirective,
-  ],
+  imports: [DecimalPipe, RouterLink, RoleLabelPipe, CourseStatusPipe, HighlightStatusDirective],
   template: `
-    <div class="dashboard-container">
+    <div class="d-flex flex-column gap-4">
       <section class="welcome-banner">
-        <div class="welcome-copy">
+        <div>
           <span class="role-pill">{{ currentUser()?.role | roleLabel }}</span>
-          <h1>Bienvenido, {{ currentUser()?.name }}</h1>
-          <p>Resumen en tiempo real de tu actividad y accesos principales en Zegel LMS.</p>
+          <h1 class="h3 fw-bold mb-1">Bienvenido, {{ currentUser()?.name }}</h1>
+          <p class="mb-0 text-white-50 small">
+            Resumen en tiempo real de tu actividad y accesos principales en Zegel LMS.
+          </p>
         </div>
-        <div class="welcome-actions">
-          <a mat-flat-button color="primary" routerLink="/courses" class="banner-cta">
-            <mat-icon>menu_book</mat-icon>
-            Ir a Cursos
-          </a>
-        </div>
+        <a class="btn btn-light fw-semibold px-3" routerLink="/courses">
+          <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>Ir a Cursos
+        </a>
       </section>
 
       @if (loading()) {
-        <div class="loading-state">
-          <mat-spinner diameter="40"></mat-spinner>
-          <span>Cargando resumen...</span>
+        <div class="glass-card p-5 text-center text-muted">
+          <div class="spinner-border text-primary mb-2" role="status"></div>
+          <div>Cargando resumen...</div>
         </div>
       } @else if (error()) {
-        <mat-card class="error-card">
-          <mat-card-content class="error-content">
-            <mat-icon>error_outline</mat-icon>
+        <div class="glass-card p-4 d-flex align-items-center justify-content-between gap-3 text-danger">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-triangle-fill"></i>
             <span>{{ error() }}</span>
-            <button mat-stroked-button color="primary" type="button" (click)="loadDashboardData()">
-              Reintentar
-            </button>
-          </mat-card-content>
-        </mat-card>
+          </div>
+          <button type="button" class="btn btn-outline-primary btn-sm" (click)="loadDashboardData()">
+            Reintentar
+          </button>
+        </div>
       } @else {
         @if (currentUser()?.role === 'admin' && summary(); as data) {
-          <section class="stats-grid">
-            <mat-card class="stat-card">
-              <mat-card-content>
-                <div class="stat-row">
+          <div class="row g-3">
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="glass-card p-3 p-md-4 stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <span class="stat-label">Total Usuarios</span>
-                    <div class="stat-value tabular-nums">{{ data.total_users }}</div>
+                    <div class="text-muted small fw-semibold">Total Usuarios</div>
+                    <div class="fs-2 fw-bold tabular-nums mt-1">{{ data.total_users }}</div>
                   </div>
-                  <div class="stat-icon tone-blue">
-                    <mat-icon>group</mat-icon>
-                  </div>
+                  <div class="stat-icon tone-blue"><i class="bi bi-people-fill"></i></div>
                 </div>
-              </mat-card-content>
-            </mat-card>
+              </div>
+            </div>
 
-            <mat-card class="stat-card">
-              <mat-card-content>
-                <div class="stat-row">
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="glass-card p-3 p-md-4 stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <span class="stat-label">Total Cursos</span>
-                    <div class="stat-value tabular-nums">{{ data.total_courses }}</div>
+                    <div class="text-muted small fw-semibold">Total Cursos</div>
+                    <div class="fs-2 fw-bold tabular-nums mt-1">{{ data.total_courses }}</div>
                   </div>
-                  <div class="stat-icon tone-indigo">
-                    <mat-icon>menu_book</mat-icon>
-                  </div>
+                  <div class="stat-icon tone-indigo"><i class="bi bi-journal-bookmark-fill"></i></div>
                 </div>
-              </mat-card-content>
-            </mat-card>
+              </div>
+            </div>
 
-            <mat-card class="stat-card">
-              <mat-card-content>
-                <div class="stat-row">
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="glass-card p-3 p-md-4 stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <span class="stat-label">Matrículas</span>
-                    <div class="stat-value tabular-nums">{{ data.total_enrollments }}</div>
+                    <div class="text-muted small fw-semibold">Matrículas</div>
+                    <div class="fs-2 fw-bold tabular-nums mt-1">{{ data.total_enrollments }}</div>
                   </div>
-                  <div class="stat-icon tone-amber">
-                    <mat-icon>assignment_turned_in</mat-icon>
-                  </div>
+                  <div class="stat-icon tone-amber"><i class="bi bi-clipboard2-check-fill"></i></div>
                 </div>
-              </mat-card-content>
-            </mat-card>
+              </div>
+            </div>
 
-            <mat-card class="stat-card">
-              <mat-card-content>
-                <div class="stat-row">
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="glass-card p-3 p-md-4 stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <span class="stat-label">Cursos Activos</span>
-                    <div class="stat-value tabular-nums">{{ data.courses_by_status.active }}</div>
+                    <div class="text-muted small fw-semibold">Cursos Activos</div>
+                    <div class="fs-2 fw-bold tabular-nums mt-1">{{ data.courses_by_status.active }}</div>
                   </div>
-                  <div class="stat-icon tone-green">
-                    <mat-icon>check_circle</mat-icon>
-                  </div>
+                  <div class="stat-icon tone-green"><i class="bi bi-check-circle-fill"></i></div>
                 </div>
-              </mat-card-content>
-            </mat-card>
-          </section>
+              </div>
+            </div>
+          </div>
 
-          <div class="two-col-grid">
-            <mat-card class="panel-card">
-              <mat-card-header>
-                <mat-card-title>Distribución de Cursos</mat-card-title>
-                <mat-card-subtitle>Estado actual del catálogo académico</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content class="progress-stack">
-                <div class="progress-item">
-                  <div class="progress-meta">
-                    <span>Activos</span>
-                    <strong class="tabular-nums">{{ data.courses_by_status.active }} / {{ data.total_courses }}</strong>
-                  </div>
-                  <mat-progress-bar
-                    mode="determinate"
-                    [value]="percent(data.courses_by_status.active, data.total_courses)"
-                  ></mat-progress-bar>
-                </div>
-                <div class="progress-item">
-                  <div class="progress-meta">
-                    <span>Borradores</span>
-                    <strong class="tabular-nums">{{ data.courses_by_status.draft }} / {{ data.total_courses }}</strong>
-                  </div>
-                  <mat-progress-bar
-                    mode="determinate"
-                    [value]="percent(data.courses_by_status.draft, data.total_courses)"
-                  ></mat-progress-bar>
-                </div>
-                <div class="progress-item">
-                  <div class="progress-meta">
-                    <span>Inactivos</span>
-                    <strong class="tabular-nums">{{ data.courses_by_status.inactive }} / {{ data.total_courses }}</strong>
-                  </div>
-                  <mat-progress-bar
-                    mode="determinate"
-                    [value]="percent(data.courses_by_status.inactive, data.total_courses)"
-                  ></mat-progress-bar>
-                </div>
-              </mat-card-content>
-            </mat-card>
+          <div class="row g-3">
+            <div class="col-12 col-lg-6">
+              <div class="glass-card p-4 h-100">
+                <h2 class="h5 fw-bold mb-1">Distribución de Cursos</h2>
+                <p class="text-muted small mb-3">Estado actual del catálogo académico</p>
 
-            <mat-card class="panel-card">
-              <mat-card-header>
-                <mat-card-title>Accesos rápidos</mat-card-title>
-                <mat-card-subtitle>Módulos administrativos</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content class="quick-links">
-                <a mat-flat-button color="primary" routerLink="/courses">
-                  <mat-icon>menu_book</mat-icon>
-                  Gestionar Cursos
-                </a>
-                <a mat-stroked-button color="primary" routerLink="/users">
-                  <mat-icon>group</mat-icon>
-                  Gestionar Usuarios
-                </a>
-                <a mat-stroked-button color="primary" routerLink="/reports">
-                  <mat-icon>bar_chart</mat-icon>
-                  Ver Reportes
-                </a>
-              </mat-card-content>
-            </mat-card>
+                <div class="d-flex flex-column gap-3">
+                  <div>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>Activos</span>
+                      <strong class="tabular-nums">{{ data.courses_by_status.active }} / {{ data.total_courses }}</strong>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                      <div
+                        class="progress-bar bg-success"
+                        [style.width.%]="percent(data.courses_by_status.active, data.total_courses)"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>Borradores</span>
+                      <strong class="tabular-nums">{{ data.courses_by_status.draft }} / {{ data.total_courses }}</strong>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                      <div
+                        class="progress-bar bg-warning"
+                        [style.width.%]="percent(data.courses_by_status.draft, data.total_courses)"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>Inactivos</span>
+                      <strong class="tabular-nums">{{ data.courses_by_status.inactive }} / {{ data.total_courses }}</strong>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                      <div
+                        class="progress-bar bg-secondary"
+                        [style.width.%]="percent(data.courses_by_status.inactive, data.total_courses)"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+              <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                  <h2 class="h5 fw-bold mb-1">Accesos rápidos</h2>
+                  <p class="text-muted small mb-3">Módulos administrativos del sistema</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <a class="btn btn-primary" routerLink="/courses">
+                    <i class="bi bi-journal-bookmark-fill me-2"></i>Gestionar Cursos
+                  </a>
+                  <a class="btn btn-outline-primary bg-white bg-opacity-50" routerLink="/users">
+                    <i class="bi bi-people-fill me-2"></i>Gestionar Usuarios
+                  </a>
+                  <a class="btn btn-outline-primary bg-white bg-opacity-50" routerLink="/reports">
+                    <i class="bi bi-bar-chart-fill me-2"></i>Ver Reportes
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         }
 
         @if (currentUser()?.role === 'profesor') {
-          <section class="stats-grid">
-            <mat-card class="stat-card">
-              <mat-card-content>
-                <div class="stat-row">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <div class="glass-card p-4 stat-card">
+                <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <span class="stat-label">Cursos Asignados</span>
-                    <div class="stat-value tabular-nums">{{ courses().length }}</div>
+                    <div class="text-muted small fw-semibold">Cursos Asignados</div>
+                    <div class="fs-2 fw-bold tabular-nums mt-1">{{ courses().length }}</div>
                   </div>
-                  <div class="stat-icon tone-blue">
-                    <mat-icon>menu_book</mat-icon>
-                  </div>
+                  <div class="stat-icon tone-blue"><i class="bi bi-journal-bookmark-fill"></i></div>
                 </div>
-              </mat-card-content>
-            </mat-card>
+              </div>
+            </div>
 
-            <mat-card class="stat-card">
-              <mat-card-content>
-                <div class="stat-row">
+            <div class="col-12 col-md-6">
+              <div class="glass-card p-4 stat-card">
+                <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <span class="stat-label">Cursos Activos</span>
-                    <div class="stat-value tabular-nums">{{ activeCourses().length }}</div>
+                    <div class="text-muted small fw-semibold">Cursos Activos</div>
+                    <div class="fs-2 fw-bold tabular-nums mt-1">{{ activeCourses().length }}</div>
                   </div>
-                  <div class="stat-icon tone-green">
-                    <mat-icon>play_circle</mat-icon>
-                  </div>
+                  <div class="stat-icon tone-green"><i class="bi bi-play-circle-fill"></i></div>
                 </div>
-              </mat-card-content>
-            </mat-card>
-          </section>
+              </div>
+            </div>
+          </div>
 
-          <mat-card class="panel-card">
-            <mat-card-header>
-              <mat-card-title>Cursos Activos Asignados</mat-card-title>
-              <mat-card-subtitle>Acceso directo para actualizar temarios y módulos</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-              @if (activeCourses().length === 0) {
-                <p class="empty-text">No tienes cursos activos asignados actualmente.</p>
-              } @else {
-                <mat-list>
-                  @for (course of activeCourses(); track course.id) {
-                    <mat-list-item>
-                      <mat-icon matListItemIcon>book</mat-icon>
-                      <span matListItemTitle>{{ course.code }} — {{ course.title }}</span>
-                      <span matListItemLine>
+          <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <div>
+                <h2 class="h5 fw-bold mb-0">Cursos Activos Asignados</h2>
+                <div class="text-muted small">Acceso directo para actualizar temarios y módulos</div>
+              </div>
+              <a class="btn btn-outline-primary btn-sm" routerLink="/courses">Ver todos</a>
+            </div>
+
+            @if (activeCourses().length === 0) {
+              <p class="text-muted mb-0">No tienes cursos activos asignados actualmente.</p>
+            } @else {
+              <div class="list-group list-group-flush bg-transparent">
+                @for (course of activeCourses(); track course.id) {
+                  <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0">
+                    <div>
+                      <div class="fw-semibold">{{ course.code }} — {{ course.title }}</div>
+                      <div class="text-muted small">
                         {{ course.credits }} créditos &middot; {{ course.modules.length }} módulos
-                      </span>
-                      <span matListItemMeta [appHighlightStatus]="course.status">
-                        {{ course.status | courseStatus }}
-                      </span>
-                    </mat-list-item>
-                  }
-                </mat-list>
-              }
-            </mat-card-content>
-            <mat-card-actions align="end">
-              <a mat-button color="primary" routerLink="/courses">Ver todos los cursos</a>
-            </mat-card-actions>
-          </mat-card>
+                      </div>
+                    </div>
+                    <span [appHighlightStatus]="course.status">{{ course.status | courseStatus }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         }
 
         @if (currentUser()?.role === 'estudiante') {
-          <section class="stats-grid">
-            <mat-card class="stat-card">
-              <mat-card-content>
-                <div class="stat-row">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <div class="glass-card p-4 stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <span class="stat-label">Cursos Activos</span>
-                    <div class="stat-value tabular-nums">{{ activeCourses().length }}</div>
+                    <div class="text-muted small fw-semibold">Cursos Activos</div>
+                    <div class="fs-2 fw-bold tabular-nums mt-1">{{ activeCourses().length }}</div>
                   </div>
-                  <div class="stat-icon tone-blue">
-                    <mat-icon>menu_book</mat-icon>
-                  </div>
+                  <div class="stat-icon tone-blue"><i class="bi bi-journal-bookmark-fill"></i></div>
                 </div>
-              </mat-card-content>
-            </mat-card>
+              </div>
+            </div>
 
-            <mat-card class="stat-card">
-              <mat-card-content>
-                <div class="stat-row">
+            <div class="col-12 col-md-4">
+              <div class="glass-card p-4 stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <span class="stat-label">Cursos Completados</span>
-                    <div class="stat-value tabular-nums">{{ completedHistoryCount() }}</div>
+                    <div class="text-muted small fw-semibold">Cursos Completados</div>
+                    <div class="fs-2 fw-bold tabular-nums mt-1">{{ completedHistoryCount() }}</div>
                   </div>
-                  <div class="stat-icon tone-green">
-                    <mat-icon>task_alt</mat-icon>
-                  </div>
+                  <div class="stat-icon tone-green"><i class="bi bi-check2-all"></i></div>
                 </div>
-              </mat-card-content>
-            </mat-card>
+              </div>
+            </div>
 
-            <mat-card class="stat-card">
-              <mat-card-content>
-                <div class="stat-row">
+            <div class="col-12 col-md-4">
+              <div class="glass-card p-4 stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center">
                   <div>
-                    <span class="stat-label">Promedio General</span>
-                    <div class="stat-value tabular-nums">
+                    <div class="text-muted small fw-semibold">Promedio General</div>
+                    <div class="fs-2 fw-bold tabular-nums mt-1">
                       @if (averageGrade() !== null) {
                         {{ averageGrade() | number: '1.2-2' }}
                       } @else {
@@ -293,108 +264,53 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
                       }
                     </div>
                   </div>
-                  <div class="stat-icon tone-amber">
-                    <mat-icon>grade</mat-icon>
-                  </div>
+                  <div class="stat-icon tone-amber"><i class="bi bi-award-fill"></i></div>
                 </div>
-              </mat-card-content>
-            </mat-card>
-          </section>
+              </div>
+            </div>
+          </div>
 
-          <mat-card class="panel-card">
-            <mat-card-header>
-              <mat-card-title>Accesos rápidos</mat-card-title>
-              <mat-card-subtitle>Consulta tus cursos matriculados y notas históricas</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content class="quick-links">
-              <a mat-flat-button color="primary" routerLink="/courses">
-                <mat-icon>menu_book</mat-icon>
-                Explorar Cursos Activos
+          <div class="glass-card p-4">
+            <h2 class="h5 fw-bold mb-1">Accesos rápidos</h2>
+            <p class="text-muted small mb-3">Consulta tus cursos matriculados y notas históricas</p>
+            <div class="d-flex flex-wrap gap-2">
+              <a class="btn btn-primary" routerLink="/courses">
+                <i class="bi bi-journal-bookmark-fill me-2"></i>Explorar Cursos Activos
               </a>
-              <a mat-stroked-button color="primary" routerLink="/courses/history">
-                <mat-icon>grade</mat-icon>
-                Ver Historial de Notas
+              <a class="btn btn-outline-primary bg-white bg-opacity-50" routerLink="/courses/history">
+                <i class="bi bi-award-fill me-2"></i>Ver Historial de Notas
               </a>
-            </mat-card-content>
-          </mat-card>
+            </div>
+          </div>
         }
       }
     </div>
   `,
   styles: [
     `
-      .dashboard-container {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-      }
-
       .welcome-banner {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
+        gap: 1.25rem;
         flex-wrap: wrap;
-        padding: 26px 30px;
+        padding: 1.75rem 2rem;
         border-radius: var(--zegel-radius);
-        border: 3px solid var(--zegel-primary-border);
-        background: var(--zegel-hero-bg);
-        color: var(--zegel-hero-text);
-        box-shadow: var(--zegel-clay-shadow);
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: #ffffff;
+        box-shadow: 0 12px 28px rgba(37, 99, 235, 0.24);
       }
 
       .role-pill {
         display: inline-block;
-        padding: 4px 12px;
-        border-radius: var(--zegel-radius-pill);
-        background: rgba(255, 255, 255, 0.22);
-        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.2);
+        font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        margin-bottom: 8px;
-      }
-
-      .welcome-copy h1 {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-      }
-
-      .welcome-copy p {
-        margin: 6px 0 0;
-        font-size: 14px;
-        color: var(--zegel-hero-muted);
-      }
-
-      .banner-cta {
-        background-color: var(--zegel-surface) !important;
-        color: var(--zegel-primary-dark) !important;
-        font-weight: 700 !important;
-        border: 2px solid var(--zegel-primary-border) !important;
-        box-shadow: var(--zegel-clay-shadow-sm);
-      }
-
-      .loading-state {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 40px;
-        justify-content: center;
-        color: var(--zegel-muted);
-      }
-
-      .error-content {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: var(--zegel-error);
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 16px;
+        margin-bottom: 0.5rem;
       }
 
       .stat-card {
@@ -402,104 +318,38 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
       }
 
       .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--zegel-clay-shadow-hover) !important;
-      }
-
-      .stat-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .stat-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--zegel-muted);
-      }
-
-      .stat-value {
-        margin-top: 6px;
-        font-size: 30px;
-        font-weight: 700;
-        color: var(--zegel-text);
-        line-height: 1.1;
+        transform: translateY(-2px);
       }
 
       .stat-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 16px;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 1.35rem;
         flex-shrink: 0;
-        box-shadow: var(--zegel-clay-shadow-sm);
       }
 
       .tone-blue {
         background: var(--zegel-primary-soft);
         color: var(--zegel-primary);
-        border: 2px solid var(--zegel-primary-border);
       }
 
       .tone-indigo {
         background: var(--zegel-indigo-soft);
         color: var(--zegel-indigo);
-        border: 2px solid var(--zegel-indigo-border);
       }
 
       .tone-amber {
         background: var(--zegel-warning-soft);
         color: var(--zegel-warning);
-        border: 2px solid var(--zegel-warning-border);
       }
 
       .tone-green {
         background: var(--zegel-success-soft);
         color: var(--zegel-success);
-        border: 2px solid var(--zegel-success-border);
-      }
-
-      .two-col-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 16px;
-      }
-
-      .progress-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        padding-top: 12px !important;
-      }
-
-      .progress-meta {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        margin-bottom: 6px;
-        color: var(--zegel-text);
-      }
-
-      .quick-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        padding-top: 14px !important;
-      }
-
-      .quick-links a {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border-radius: 10px !important;
-      }
-
-      .empty-text {
-        color: var(--zegel-muted);
-        margin: 12px 0;
       }
     `,
   ],

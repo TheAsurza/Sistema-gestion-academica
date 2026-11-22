@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   AsyncValidatorFn,
@@ -9,275 +9,231 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
 import { Observable, catchError, map, of, switchMap, timer } from 'rxjs';
-import { Course, CourseModule, CoursePayload, CourseStatus } from '../../../core/models/course.model';
+import {
+  Course,
+  CourseModule,
+  CoursePayload,
+  CourseStatus,
+} from '../../../core/models/course.model';
 import { User } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseService } from '../../../core/services/course.service';
 import { UserService } from '../../../core/services/user.service';
 
-export interface CourseFormDialogData {
-  course?: Course;
-}
-
 @Component({
   selector: 'app-course-form-dialog',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-  ],
+  imports: [ReactiveFormsModule],
   template: `
-    <h2 mat-dialog-title>{{ isEdit ? 'Editar Curso' : 'Nuevo Curso' }}</h2>
-
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <mat-dialog-content class="dialog-content">
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="field-half">
-            <mat-label>Código</mat-label>
-            <input matInput formControlName="code" placeholder="Ej. ZEG-101" />
-            @if (form.controls.code.pending) {
-              <mat-spinner matSuffix diameter="18"></mat-spinner>
-            }
-            @if (form.controls.code.hasError('required') && form.controls.code.touched) {
-              <mat-error>El código es obligatorio.</mat-error>
-            } @else if (form.controls.code.hasError('minlength') && form.controls.code.touched) {
-              <mat-error>Mínimo 3 caracteres.</mat-error>
-            } @else if (form.controls.code.hasError('codeTaken')) {
-              <mat-error>Este código ya está en uso.</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="field-half">
-            <mat-label>Créditos</mat-label>
-            <input matInput type="number" formControlName="credits" min="1" max="10" />
-            @if (form.controls.credits.hasError('required') && form.controls.credits.touched) {
-              <mat-error>Los créditos son obligatorios.</mat-error>
-            } @else if (form.controls.credits.hasError('min') || form.controls.credits.hasError('max')) {
-              <mat-error>Debe estar entre 1 y 10.</mat-error>
-            }
-          </mat-form-field>
+    <div
+      class="glass-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="isEdit ? 'Editar Curso' : 'Nuevo Curso'"
+      (click)="cancelled.emit()"
+    >
+      <div class="glass-modal course-modal p-4" (click)="$event.stopPropagation()">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">{{ isEdit ? 'Editar Curso' : 'Nuevo Curso' }}</h5>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Cerrar"
+            (click)="cancelled.emit()"
+          ></button>
         </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Título del curso</mat-label>
-          <input matInput formControlName="title" placeholder="Ej. Desarrollo de Interfaces III" />
-          @if (form.controls.title.hasError('required') && form.controls.title.touched) {
-            <mat-error>El título es obligatorio.</mat-error>
-          } @else if (form.controls.title.hasError('minlength') && form.controls.title.touched) {
-            <mat-error>Mínimo 3 caracteres.</mat-error>
-          }
-        </mat-form-field>
+        <form [formGroup]="form" (ngSubmit)="onSave()" class="d-flex flex-column gap-3">
+          <div class="row g-3">
+            <div class="col-12 col-sm-5">
+              <label class="form-label small fw-semibold">Código</label>
+              <input
+                type="text"
+                class="form-control"
+                [class.is-invalid]="form.controls.code.invalid && form.controls.code.touched"
+                formControlName="code"
+                placeholder="Ej. ZEG-301"
+              />
+              @if (form.controls.code.pending) {
+                <div class="form-text text-primary">Verificando disponibilidad...</div>
+              } @else if (form.controls.code.hasError('required') && form.controls.code.touched) {
+                <div class="text-danger small mt-1">El código es obligatorio.</div>
+              } @else if (form.controls.code.hasError('minlength') && form.controls.code.touched) {
+                <div class="text-danger small mt-1">Mínimo 3 caracteres.</div>
+              } @else if (form.controls.code.hasError('codeTaken')) {
+                <div class="text-danger small mt-1">Este código ya está registrado.</div>
+              }
+            </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Descripción</mat-label>
-          <textarea matInput formControlName="description" rows="2"></textarea>
-        </mat-form-field>
+            <div class="col-12 col-sm-3">
+              <label class="form-label small fw-semibold">Créditos</label>
+              <input
+                type="number"
+                class="form-control"
+                [class.is-invalid]="form.controls.credits.invalid && form.controls.credits.touched"
+                formControlName="credits"
+                min="1"
+                max="10"
+              />
+              @if (form.controls.credits.invalid && form.controls.credits.touched) {
+                <div class="text-danger small mt-1">Entre 1 y 10.</div>
+              }
+            </div>
 
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="field-half">
-            <mat-label>Estado</mat-label>
-            <mat-select formControlName="status">
-              <mat-option value="active">Activo</mat-option>
-              <mat-option value="draft">Borrador</mat-option>
-              <mat-option value="inactive">Inactivo</mat-option>
-            </mat-select>
-          </mat-form-field>
+            <div class="col-12 col-sm-4">
+              <label class="form-label small fw-semibold">Estado</label>
+              <select class="form-select" formControlName="status">
+                <option value="active">Activo</option>
+                <option value="draft">Borrador</option>
+                <option value="inactive">Inactivo</option>
+              </select>
+            </div>
+          </div>
 
-          @if (isAdmin) {
-            <mat-form-field appearance="outline" class="field-half">
-              <mat-label>Profesor</mat-label>
-              <mat-select formControlName="teacher_id">
-                <mat-option [value]="null">Sin asignar</mat-option>
-                @for (teacher of teachers(); track teacher.id) {
-                  <mat-option [value]="teacher.id">{{ teacher.name }}</mat-option>
+          <div>
+            <label class="form-label small fw-semibold">Título del curso</label>
+            <input
+              type="text"
+              class="form-control"
+              [class.is-invalid]="form.controls.title.invalid && form.controls.title.touched"
+              formControlName="title"
+              placeholder="Ej. Desarrollo de Interfaces 3"
+            />
+            @if (form.controls.title.hasError('required') && form.controls.title.touched) {
+              <div class="text-danger small mt-1">El título es obligatorio.</div>
+            } @else if (form.controls.title.hasError('minlength') && form.controls.title.touched) {
+              <div class="text-danger small mt-1">Mínimo 3 caracteres.</div>
+            }
+          </div>
+
+          <div>
+            <label class="form-label small fw-semibold">Descripción</label>
+            <textarea
+              class="form-control"
+              rows="2"
+              formControlName="description"
+              placeholder="Resumen del curso..."
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="form-label small fw-semibold">Profesor asignado</label>
+            <select class="form-select" formControlName="teacher_id">
+              <option [ngValue]="null">Sin asignar</option>
+              @for (teacher of teachers(); track teacher.id) {
+                <option [ngValue]="teacher.id">{{ teacher.name }}</option>
+              }
+            </select>
+            @if (!isAdmin) {
+              <div class="form-text">Solo el administrador puede reasignar el profesor.</div>
+            }
+          </div>
+
+          <div class="pt-2 border-top">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-semibold small">Módulos del temario ({{ modulesArray.length }})</span>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm"
+                (click)="addModule()"
+              >
+                <i class="bi bi-plus-lg me-1"></i>Agregar módulo
+              </button>
+            </div>
+
+            @if (modulesArray.length === 0) {
+              <p class="text-muted small mb-0">Sin módulos agregados. Usa "Agregar módulo" para añadir el temario.</p>
+            } @else {
+              <div formArrayName="modules" class="d-flex flex-column gap-2">
+                @for (modGroup of modulesArray.controls; track $index) {
+                  <div [formGroupName]="$index" class="row g-2 align-items-start">
+                    <div class="col-7 col-sm-8">
+                      <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        formControlName="title"
+                        [placeholder]="'Título del módulo ' + ($index + 1)"
+                      />
+                    </div>
+                    <div class="col-3">
+                      <input
+                        type="number"
+                        class="form-control form-control-sm"
+                        formControlName="hours"
+                        min="1"
+                        placeholder="Horas"
+                      />
+                    </div>
+                    <div class="col-2 col-sm-1 text-end">
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger btn-sm"
+                        aria-label="Quitar módulo"
+                        (click)="removeModule($index)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
                 }
-              </mat-select>
-            </mat-form-field>
-          } @else {
-            <mat-form-field appearance="outline" class="field-half">
-              <mat-label>Profesor</mat-label>
-              <input matInput [value]="data?.course?.teacher_name || 'Profesor asignado'" disabled />
-            </mat-form-field>
-          }
-        </div>
+              </div>
+            }
+          </div>
 
-        <div class="modules-section">
-          <div class="modules-header">
-            <h3>Módulos ({{ modulesArray.length }})</h3>
-            <button mat-stroked-button color="primary" type="button" (click)="addModule()">
-              <mat-icon>add</mat-icon>
-              Agregar módulo
+          <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+            <button type="button" class="btn btn-outline-secondary" (click)="cancelled.emit()">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="form.invalid || form.pending"
+            >
+              {{ isEdit ? 'Guardar cambios' : 'Crear curso' }}
             </button>
           </div>
-
-          <div formArrayName="modules" class="modules-list">
-            @for (moduleGroup of modulesArray.controls; track $index) {
-              <div [formGroupName]="$index" class="module-row">
-                <mat-form-field appearance="outline" class="module-title">
-                  <mat-label>Título del módulo {{ $index + 1 }}</mat-label>
-                  <input matInput formControlName="title" />
-                  @if (moduleGroup.get('title')?.hasError('required') && moduleGroup.get('title')?.touched) {
-                    <mat-error>Requerido.</mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="module-hours">
-                  <mat-label>Horas</mat-label>
-                  <input matInput type="number" formControlName="hours" min="1" />
-                  @if (moduleGroup.get('hours')?.hasError('required') && moduleGroup.get('hours')?.touched) {
-                    <mat-error>Requerido.</mat-error>
-                  } @else if (moduleGroup.get('hours')?.hasError('min')) {
-                    <mat-error>Mín. 1</mat-error>
-                  }
-                </mat-form-field>
-
-                <button
-                  mat-icon-button
-                  color="warn"
-                  type="button"
-                  aria-label="Eliminar módulo"
-                  (click)="removeModule($index)"
-                >
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-            } @empty {
-              <p class="empty-modules">No hay módulos registrados. Agrega al menos uno si lo deseas.</p>
-            }
-          </div>
-        </div>
-      </mat-dialog-content>
-
-      <mat-dialog-actions align="end">
-        <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-        <button
-          mat-flat-button
-          color="primary"
-          type="submit"
-          [disabled]="form.invalid || form.pending"
-        >
-          {{ isEdit ? 'Guardar cambios' : 'Crear curso' }}
-        </button>
-      </mat-dialog-actions>
-    </form>
+        </form>
+      </div>
+    </div>
   `,
   styles: [
     `
-      .dialog-content {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        min-width: 520px;
-        max-width: 100%;
-        padding-top: 8px;
-      }
-
-      .form-row {
-        display: flex;
-        gap: 12px;
-      }
-
-      .field-half {
-        flex: 1 1 50%;
-      }
-
-      .full-width {
-        width: 100%;
-      }
-
-      .modules-section {
-        border-top: 1px solid #e0e0e0;
-        padding-top: 12px;
-      }
-
-      .modules-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 12px;
-      }
-
-      .modules-header h3 {
-        margin: 0;
-        font-size: 15px;
-        font-weight: 600;
-      }
-
-      .modules-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .module-row {
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-      }
-
-      .module-title {
-        flex: 1 1 auto;
-      }
-
-      .module-hours {
-        width: 110px;
-      }
-
-      .empty-modules {
-        color: #757575;
-        font-size: 13px;
-        margin: 4px 0 8px;
-      }
-
-      @media (max-width: 600px) {
-        .dialog-content {
-          min-width: auto;
-        }
-
-        .form-row {
-          flex-direction: column;
-        }
+      .course-modal {
+        max-width: 660px;
+        max-height: 90vh;
+        overflow-y: auto;
       }
     `,
   ],
 })
 export class CourseFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly authService = inject(AuthService);
   private readonly courseService = inject(CourseService);
   private readonly userService = inject(UserService);
-  private readonly dialogRef = inject(MatDialogRef<CourseFormDialogComponent, CoursePayload | undefined>);
-  readonly data = inject<CourseFormDialogData | null>(MAT_DIALOG_DATA, { optional: true });
+  private readonly authService = inject(AuthService);
 
-  readonly isEdit = !!this.data?.course;
+  @Input() course: Course | null = null;
+  @Output() saved = new EventEmitter<CoursePayload>();
+  @Output() cancelled = new EventEmitter<void>();
+
   readonly isAdmin = this.authService.hasRole(['admin']);
   readonly teachers = signal<User[]>([]);
 
+  isEdit = false;
+  private originalCode = '';
+
   readonly form = this.fb.nonNullable.group({
     code: [
-      this.data?.course?.code ?? '',
+      '',
       [Validators.required, Validators.minLength(3)],
       [this.codeAvailableValidator()],
     ],
-    title: [this.data?.course?.title ?? '', [Validators.required, Validators.minLength(3)]],
-    description: [this.data?.course?.description ?? ''],
-    credits: [this.data?.course?.credits ?? 3, [Validators.required, Validators.min(1), Validators.max(10)]],
-    status: [this.data?.course?.status ?? ('active' as CourseStatus), [Validators.required]],
-    teacher_id: [{ value: this.data?.course?.teacher_id ?? null, disabled: !this.isAdmin }],
+    title: ['', [Validators.required, Validators.minLength(3)]],
+    description: [''],
+    credits: [3, [Validators.required, Validators.min(1), Validators.max(10)]],
+    status: ['active' as CourseStatus, [Validators.required]],
+    teacher_id: [null as number | null],
     modules: this.fb.array<FormGroup>([]),
   });
 
@@ -286,40 +242,61 @@ export class CourseFormDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const existingModules = this.data?.course?.modules ?? [];
-    for (const mod of existingModules) {
-      this.addModule(mod);
+    this.isEdit = !!this.course;
+    this.originalCode = this.course?.code?.trim().toUpperCase() ?? '';
+
+    if (this.course) {
+      this.form.patchValue({
+        code: this.course.code,
+        title: this.course.title,
+        description: this.course.description ?? '',
+        credits: this.course.credits,
+        status: this.course.status,
+        teacher_id: this.course.teacher_id ?? null,
+      });
+
+      this.course.modules.forEach((mod) => this.addModule(mod));
     }
 
-    if (this.isAdmin) {
-      this.userService.getUsers().subscribe({
-        next: (users) => {
-          this.teachers.set(users.filter((user) => user.role === 'profesor'));
-        },
-        error: () => {
-          this.teachers.set([]);
-        },
-      });
+    if (!this.isAdmin) {
+      this.form.controls.teacher_id.disable();
+      if (this.course?.teacher_id && this.course.teacher_name) {
+        this.teachers.set([
+          {
+            id: this.course.teacher_id,
+            name: this.course.teacher_name,
+            email: '',
+            role: 'profesor',
+          },
+        ]);
+      }
+      return;
     }
+
+    this.userService.getUsers().subscribe({
+      next: (users) => {
+        this.teachers.set(users.filter((u) => u.role === 'profesor'));
+      },
+      error: () => {
+        // errorInterceptor ya notifica el error HTTP
+      },
+    });
   }
 
-  addModule(module?: CourseModule): void {
-    const group = this.fb.nonNullable.group({
-      title: [module?.title ?? '', [Validators.required]],
-      hours: [module?.hours ?? 2, [Validators.required, Validators.min(1)]],
-    });
-    this.modulesArray.push(group);
+  addModule(mod?: CourseModule): void {
+    this.modulesArray.push(
+      this.fb.nonNullable.group({
+        title: [mod?.title ?? '', [Validators.required, Validators.minLength(2)]],
+        hours: [mod?.hours ?? 4, [Validators.required, Validators.min(1)]],
+      }),
+    );
   }
 
   removeModule(index: number): void {
     this.modulesArray.removeAt(index);
   }
 
-  onCancel(): void {
-    this.dialogRef.close(undefined);
-  }
-
-  onSubmit(): void {
+  onSave(): void {
     if (this.form.invalid || this.form.pending) {
       this.form.markAllAsTouched();
       return;
@@ -327,38 +304,34 @@ export class CourseFormDialogComponent implements OnInit {
 
     const raw = this.form.getRawValue();
     const payload: CoursePayload = {
-      code: raw.code.trim(),
+      code: raw.code.trim().toUpperCase(),
       title: raw.title.trim(),
       description: raw.description.trim(),
       credits: Number(raw.credits),
       status: raw.status,
       teacher_id: raw.teacher_id,
-      modules: raw.modules.map((mod, index) => ({
-        title: String(mod['title'] ?? '').trim(),
-        hours: Number(mod['hours'] ?? 1),
-        sort_order: index + 1,
+      modules: raw.modules.map((m, idx) => ({
+        title: String(m['title']).trim(),
+        hours: Number(m['hours']),
+        sort_order: idx + 1,
       })),
     };
 
-    this.dialogRef.close(payload);
+    this.saved.emit(payload);
   }
 
   private codeAvailableValidator(): AsyncValidatorFn {
-    const initialCode = this.data?.course?.code?.trim().toLowerCase() ?? '';
-    const excludeId = this.data?.course?.id;
-
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
-      const value = String(control.value ?? '').trim();
+      const value = String(control.value ?? '').trim().toUpperCase();
       if (!value || value.length < 3) {
         return of(null);
       }
-
-      if (this.isEdit && value.toLowerCase() === initialCode) {
+      if (this.isEdit && value === this.originalCode) {
         return of(null);
       }
 
       return timer(300).pipe(
-        switchMap(() => this.courseService.checkCodeAvailable(value, excludeId)),
+        switchMap(() => this.courseService.checkCodeAvailable(value, this.course?.id)),
         map((available) => (available ? null : { codeTaken: true })),
         catchError(() => of(null)),
       );

@@ -1,11 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -17,61 +11,53 @@ interface DemoCredential {
 }
 
 const DEMO_CREDENTIALS: DemoCredential[] = [
-  { label: 'Admin', icon: 'admin_panel_settings', email: 'admin@zegel.edu.pe', password: 'password' },
-  { label: 'Profesor', icon: 'co_present', email: 'carlos.mendoza@zegel.edu.pe', password: 'password' },
-  { label: 'Estudiante', icon: 'school', email: 'anthony.quispe@zegel.edu.pe', password: 'password' },
+  { label: 'Admin', icon: 'bi-shield-check', email: 'admin@zegel.edu.pe', password: 'password' },
+  { label: 'Profesor', icon: 'bi-person-workspace', email: 'carlos.mendoza@zegel.edu.pe', password: 'password' },
+  { label: 'Estudiante', icon: 'bi-mortarboard', email: 'anthony.quispe@zegel.edu.pe', password: 'password' },
 ];
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-  ],
+  imports: [ReactiveFormsModule],
   template: `
     <div class="login-shell">
       <section class="hero-panel">
         <div class="hero-content">
-          <div class="hero-brand">
+          <div class="d-flex align-items-center gap-3">
             <div class="hero-logo">
-              <mat-icon>school</mat-icon>
+              <i class="bi bi-mortarboard-fill"></i>
             </div>
             <div>
               <span class="hero-kicker">Zegel · Escuela de Tecnología</span>
-              <h1>Zegel LMS</h1>
+              <h1 class="h2 fw-bold mb-0 text-white">Zegel LMS</h1>
             </div>
           </div>
 
-          <p class="hero-lead">
+          <p class="hero-lead mb-0">
             Plataforma centralizada para la gestión académica de cursos, usuarios y seguimiento de notas con acceso seguro por roles.
           </p>
 
-          <div class="hero-highlights">
+          <div class="d-none d-lg-flex flex-column gap-3">
             <div class="highlight-card">
-              <mat-icon>admin_panel_settings</mat-icon>
+              <i class="bi bi-shield-check fs-4 text-info"></i>
               <div>
-                <strong>Administrador</strong>
-                <span>CRUD completo de cursos, usuarios y reportes</span>
+                <div class="fw-semibold small text-white">Administrador</div>
+                <div class="text-white-50 small">CRUD completo de cursos, usuarios y reportes</div>
               </div>
             </div>
             <div class="highlight-card">
-              <mat-icon>co_present</mat-icon>
+              <i class="bi bi-person-workspace fs-4 text-info"></i>
               <div>
-                <strong>Profesor</strong>
-                <span>Gestión de temarios en sus cursos asignados</span>
+                <div class="fw-semibold small text-white">Profesor</div>
+                <div class="text-white-50 small">Gestión de temarios en sus cursos asignados</div>
               </div>
             </div>
             <div class="highlight-card">
-              <mat-icon>school</mat-icon>
+              <i class="bi bi-mortarboard fs-4 text-info"></i>
               <div>
-                <strong>Estudiante</strong>
-                <span>Cursos activos e historial académico por ciclo</span>
+                <div class="fw-semibold small text-white">Estudiante</div>
+                <div class="text-white-50 small">Cursos activos e historial académico por ciclo</div>
               </div>
             </div>
           </div>
@@ -79,102 +65,110 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
       </section>
 
       <section class="form-panel">
-        <mat-card class="login-card">
-          <div class="card-top">
+        <div class="glass-card login-card p-4 p-md-5">
+          <div class="mb-4">
             <span class="welcome-pill">Acceso JWT Seguro</span>
-            <h2>Iniciar sesión</h2>
-            <p>Ingresa tus credenciales institucionales para continuar.</p>
+            <h2 class="h4 fw-bold mb-1">Iniciar sesión</h2>
+            <p class="text-muted small mb-0">
+              Ingresa tus credenciales institucionales para continuar.
+            </p>
           </div>
 
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Correo electrónico</mat-label>
-              <input
-                matInput
-                type="email"
-                formControlName="email"
-                placeholder="usuario@zegel.edu.pe"
-                autocomplete="email"
-              />
-              <mat-icon matPrefix>email</mat-icon>
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="d-flex flex-column gap-3">
+            <div>
+              <label for="login-email" class="form-label small fw-semibold">Correo electrónico</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white bg-opacity-75">
+                  <i class="bi bi-envelope text-muted"></i>
+                </span>
+                <input
+                  id="login-email"
+                  type="email"
+                  class="form-control"
+                  [class.is-invalid]="loginForm.controls.email.invalid && loginForm.controls.email.touched"
+                  formControlName="email"
+                  placeholder="usuario@zegel.edu.pe"
+                  autocomplete="email"
+                />
+              </div>
               @if (loginForm.controls.email.hasError('required') && loginForm.controls.email.touched) {
-                <mat-error>El correo electrónico es obligatorio.</mat-error>
+                <div class="text-danger small mt-1">El correo electrónico es obligatorio.</div>
               } @else if (loginForm.controls.email.hasError('email') && loginForm.controls.email.touched) {
-                <mat-error>Ingresa un correo electrónico válido.</mat-error>
+                <div class="text-danger small mt-1">Ingresa un correo electrónico válido.</div>
               }
-            </mat-form-field>
+            </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Contraseña</mat-label>
-              <input
-                matInput
-                [type]="hidePassword() ? 'password' : 'text'"
-                formControlName="password"
-                autocomplete="current-password"
-              />
-              <mat-icon matPrefix>lock</mat-icon>
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="togglePasswordVisibility()"
-                [attr.aria-label]="hidePassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'"
-              >
-                <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
+            <div>
+              <label for="login-password" class="form-label small fw-semibold">Contraseña</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white bg-opacity-75">
+                  <i class="bi bi-lock text-muted"></i>
+                </span>
+                <input
+                  id="login-password"
+                  [type]="hidePassword() ? 'password' : 'text'"
+                  class="form-control"
+                  [class.is-invalid]="loginForm.controls.password.invalid && loginForm.controls.password.touched"
+                  formControlName="password"
+                  autocomplete="current-password"
+                />
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary bg-white bg-opacity-75"
+                  (click)="togglePasswordVisibility()"
+                  [attr.aria-label]="hidePassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+                >
+                  <i class="bi" [class]="hidePassword() ? 'bi-eye-slash' : 'bi-eye'"></i>
+                </button>
+              </div>
               @if (loginForm.controls.password.hasError('required') && loginForm.controls.password.touched) {
-                <mat-error>La contraseña es obligatoria.</mat-error>
+                <div class="text-danger small mt-1">La contraseña es obligatoria.</div>
               } @else if (loginForm.controls.password.hasError('minlength') && loginForm.controls.password.touched) {
-                <mat-error>Debe tener al menos 6 caracteres.</mat-error>
+                <div class="text-danger small mt-1">Debe tener al menos 6 caracteres.</div>
               }
-            </mat-form-field>
+            </div>
 
             @if (errorMessage()) {
-              <div class="error-banner" role="alert">
-                <mat-icon>error_outline</mat-icon>
+              <div class="alert alert-danger d-flex align-items-center gap-2 py-2 px-3 small mb-0" role="alert">
+                <i class="bi bi-exclamation-circle-fill"></i>
                 <span>{{ errorMessage() }}</span>
               </div>
             }
 
             <button
-              mat-flat-button
-              color="primary"
               type="submit"
-              class="submit-btn"
+              class="btn btn-primary py-2 mt-1 d-flex align-items-center justify-content-center gap-2"
               [disabled]="loginForm.invalid || loading()"
             >
               @if (loading()) {
-                <span class="btn-content">
-                  <mat-spinner diameter="20"></mat-spinner>
-                  <span>Ingresando...</span>
-                </span>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span>Ingresando...</span>
               } @else {
-                <span class="btn-content">
-                  <span>Ingresar al sistema</span>
-                  <mat-icon>arrow_forward</mat-icon>
-                </span>
+                <span>Ingresar al sistema</span>
+                <i class="bi bi-arrow-right"></i>
               }
             </button>
           </form>
 
-          <div class="demo-section">
-            <span class="demo-title">Accesos rápidos de demostración</span>
-            <div class="demo-buttons">
+          <div class="demo-section mt-4 pt-3 text-center">
+            <div class="text-muted small mb-2">Accesos rápidos de demostración</div>
+            <div class="row g-2">
               @for (cred of demoCredentials; track cred.email) {
-                <button
-                  mat-stroked-button
-                  type="button"
-                  class="demo-chip"
-                  (click)="fillCredentials(cred)"
-                  [disabled]="loading()"
-                >
-                  <mat-icon>{{ cred.icon }}</mat-icon>
-                  <span>{{ cred.label }}</span>
-                </button>
+                <div class="col-4">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm w-100 bg-white bg-opacity-50 d-flex align-items-center justify-content-center gap-1"
+                    (click)="fillCredentials(cred)"
+                    [disabled]="loading()"
+                  >
+                    <i class="bi" [class]="cred.icon"></i>
+                    <span>{{ cred.label }}</span>
+                  </button>
+                </div>
               }
             </div>
           </div>
-        </mat-card>
+        </div>
       </section>
     </div>
   `,
@@ -184,13 +178,11 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         min-height: 100vh;
         display: grid;
         grid-template-columns: 1.05fr 0.95fr;
-        background: var(--zegel-bg);
       }
 
       .hero-panel {
-        background: var(--zegel-hero-bg);
-        color: var(--zegel-hero-text);
-        padding: 48px;
+        background: radial-gradient(circle at top right, #3b82f6 0%, #1d4ed8 45%, #0f172a 100%);
+        padding: 3rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -200,107 +192,59 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         max-width: 460px;
         display: flex;
         flex-direction: column;
-        gap: 28px;
-      }
-
-      .hero-brand {
-        display: flex;
-        align-items: center;
-        gap: 16px;
+        gap: 1.5rem;
       }
 
       .hero-logo {
-        width: 60px;
-        height: 60px;
-        border-radius: 18px;
-        background: var(--zegel-surface);
-        color: var(--zegel-primary);
-        border: 3px solid var(--zegel-primary-border);
-        box-shadow: var(--zegel-clay-shadow);
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-      }
-
-      .hero-logo mat-icon {
-        font-size: 30px;
-        width: 30px;
-        height: 30px;
+        font-size: 1.75rem;
       }
 
       .hero-kicker {
         display: block;
-        font-size: 12px;
+        font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--zegel-hero-muted);
-      }
-
-      .hero-brand h1 {
-        margin: 2px 0 0;
-        font-size: 30px;
-        font-weight: 700;
-        letter-spacing: -0.02em;
+        color: #bfdbfe;
       }
 
       .hero-lead {
-        margin: 0;
-        font-size: 15px;
+        color: #e2e8f0;
+        font-size: 0.95rem;
         line-height: 1.6;
-        color: var(--zegel-hero-muted);
-      }
-
-      .hero-highlights {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
       }
 
       .highlight-card {
         display: flex;
         align-items: center;
         gap: 14px;
-        padding: 16px 18px;
-        border-radius: var(--zegel-radius);
-        background: var(--zegel-surface);
-        color: var(--zegel-text);
-        border: var(--zegel-clay-border);
-        box-shadow: var(--zegel-clay-shadow);
-      }
-
-      .highlight-card mat-icon {
-        color: var(--zegel-primary);
-        flex-shrink: 0;
-      }
-
-      .highlight-card strong {
-        display: block;
-        font-size: 14px;
-        font-weight: 700;
-      }
-
-      .highlight-card span {
-        display: block;
-        font-size: 12px;
-        color: var(--zegel-muted);
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.16);
       }
 
       .form-panel {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 32px 24px;
+        padding: 2rem 1.25rem;
       }
 
       .login-card {
         width: 100%;
         max-width: 440px;
-        padding: 32px !important;
-      }
-
-      .card-top {
-        margin-bottom: 24px;
       }
 
       .welcome-pill {
@@ -308,106 +252,26 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         padding: 4px 10px;
         border-radius: 9999px;
         background: var(--zegel-primary-soft);
-        color: var(--zegel-primary);
-        font-size: 11px;
+        color: var(--zegel-primary-dark);
+        border: 1px solid var(--zegel-primary-border);
+        font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: 10px;
-      }
-
-      .card-top h2 {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--zegel-text);
-      }
-
-      .card-top p {
-        margin: 6px 0 0;
-        font-size: 14px;
-        color: var(--zegel-muted);
-      }
-
-      .login-form {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .full-width {
-        width: 100%;
-      }
-
-      .error-banner {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 12px;
-        border-radius: var(--zegel-radius-sm);
-        background: var(--zegel-error-soft);
-        border: 2px solid var(--zegel-error-border);
-        color: var(--zegel-error);
-        font-size: 13px;
-      }
-
-      .submit-btn {
-        height: 46px;
-        border-radius: 10px !important;
-        font-weight: 600 !important;
-        margin-top: 4px;
-      }
-
-      .btn-content {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
+        margin-bottom: 0.65rem;
       }
 
       .demo-section {
-        margin-top: 24px;
-        padding-top: 18px;
         border-top: 1px solid var(--zegel-border);
-        text-align: center;
       }
 
-      .demo-title {
-        display: block;
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--zegel-muted);
-        margin-bottom: 12px;
-      }
-
-      .demo-buttons {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-      }
-
-      .demo-chip {
-        border-radius: 10px !important;
-        border-color: var(--zegel-border) !important;
-        font-size: 12px !important;
-        height: 38px;
-      }
-
-      @media (max-width: 900px) {
+      @media (max-width: 991px) {
         .login-shell {
           grid-template-columns: 1fr;
         }
 
         .hero-panel {
-          padding: 32px 24px;
-        }
-
-        .hero-highlights {
-          display: none;
-        }
-
-        .demo-buttons {
-          grid-template-columns: 1fr;
+          padding: 2rem 1.5rem;
         }
       }
     `,

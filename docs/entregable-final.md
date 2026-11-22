@@ -1,7 +1,7 @@
 # Entregable Final — Desarrollo de Interfaces III
 
 **Proyecto:** Plataforma de Gestión de Cursos y Usuarios (Zegel)  
-**Tecnologías:** Angular 22 (Standalone + Angular Material) · PHP 8+ (PDO) · MySQL · JWT (HS256)
+**Tecnologías:** Angular 22 (Standalone + Bootstrap 5) · PHP 8+ (PDO) · MySQL · JWT (HS256)
 
 ---
 

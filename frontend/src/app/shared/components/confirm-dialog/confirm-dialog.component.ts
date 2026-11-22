@@ -1,47 +1,70 @@
-import { Component, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-
-export interface ConfirmDialogData {
-  title: string;
-  message: string;
-  confirmText?: string;
-}
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule],
   template: `
-    <h2 mat-dialog-title>{{ data.title }}</h2>
-    <mat-dialog-content>
-      <p>{{ data.message }}</p>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-      <button mat-flat-button color="warn" class="confirm-warn-btn" type="button" (click)="onConfirm()">
-        {{ data.confirmText || 'Confirmar' }}
-      </button>
-    </mat-dialog-actions>
+    <div
+      class="glass-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="title"
+      (click)="confirmed.emit(false)"
+    >
+      <div class="glass-modal confirm-modal p-4" (click)="$event.stopPropagation()">
+        <div class="d-flex align-items-start gap-3 mb-3">
+          <div class="confirm-icon-wrap">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-1">{{ title }}</h5>
+            <p class="text-muted mb-0 small">{{ message }}</p>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm px-3"
+            (click)="confirmed.emit(false)"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger btn-sm px-3"
+            (click)="confirmed.emit(true)"
+          >
+            {{ confirmText }}
+          </button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [
     `
-      .confirm-warn-btn {
-        background-color: var(--mat-sys-error);
-        color: var(--mat-sys-on-error);
+      .confirm-modal {
+        max-width: 420px;
+      }
+
+      .confirm-icon-wrap {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--zegel-error-soft);
+        color: var(--zegel-error);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
       }
     `,
   ],
 })
 export class ConfirmDialogComponent {
-  readonly data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);
-  private readonly dialogRef = inject(MatDialogRef<ConfirmDialogComponent, boolean>);
-
-  onCancel(): void {
-    this.dialogRef.close(false);
-  }
-
-  onConfirm(): void {
-    this.dialogRef.close(true);
-  }
+  @Input() title = 'Confirmar acción';
+  @Input() message = '¿Deseas continuar?';
+  @Input() confirmText = 'Confirmar';
+  @Output() confirmed = new EventEmitter<boolean>();
 }

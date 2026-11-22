@@ -1,11 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
 
 @Component({
-  imports: [RouterOutlet],
   selector: 'app-root',
-  styleUrl: './app.scss',
+  imports: [RouterOutlet, ToastContainerComponent],
   templateUrl: './app.html',
+  styleUrl: './app.scss',
 })
 export class App {
   protected readonly title = signal('frontend');
