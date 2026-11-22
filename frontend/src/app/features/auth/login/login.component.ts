@@ -144,11 +144,15 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
               [disabled]="loginForm.invalid || loading()"
             >
               @if (loading()) {
-                <mat-spinner diameter="20"></mat-spinner>
-                <span>Ingresando...</span>
+                <span class="btn-content">
+                  <mat-spinner diameter="20"></mat-spinner>
+                  <span>Ingresando...</span>
+                </span>
               } @else {
-                <span>Ingresar al sistema</span>
-                <mat-icon>arrow_forward</mat-icon>
+                <span class="btn-content">
+                  <span>Ingresar al sistema</span>
+                  <mat-icon>arrow_forward</mat-icon>
+                </span>
               }
             </button>
           </form>
@@ -349,11 +353,14 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         height: 46px;
         border-radius: 10px !important;
         font-weight: 600 !important;
-        display: flex;
+        margin-top: 4px;
+      }
+
+      .btn-content {
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        margin-top: 4px;
       }
 
       .demo-section {
