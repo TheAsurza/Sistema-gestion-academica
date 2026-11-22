@@ -184,7 +184,10 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         min-height: 100vh;
         display: grid;
         grid-template-columns: 1.05fr 0.95fr;
-        background: var(--zegel-bg);
+        background:
+          radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.22) 0%, transparent 45%),
+          radial-gradient(circle at 70% 85%, rgba(99, 102, 241, 0.18) 0%, transparent 45%),
+          linear-gradient(135deg, #dbeafe 0%, #e0e7ff 55%, #e2e8f0 100%);
       }
 
       .hero-panel {
@@ -295,6 +298,10 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         width: 100%;
         max-width: 440px;
         padding: 32px !important;
+        background: rgba(255, 255, 255, 0.74) !important;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(255, 255, 255, 0.7) !important;
       }
 
       .card-top {

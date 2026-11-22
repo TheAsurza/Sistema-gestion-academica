@@ -168,9 +168,12 @@ const MENU_ITEMS: NavMenuItem[] = [
       }
 
       .layout-sidenav {
-        width: 264px;
-        background: var(--zegel-surface);
-        border-right: 1px solid var(--zegel-border);
+        width: 268px;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border-right: 1px solid rgba(255, 255, 255, 0.12);
+        color: #f8fafc;
       }
 
       .sidenav-inner {
@@ -185,19 +188,19 @@ const MENU_ITEMS: NavMenuItem[] = [
         gap: 12px;
         height: 72px;
         padding: 0 20px;
-        border-bottom: 1px solid var(--zegel-border);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .brand-logo {
         width: 40px;
         height: 40px;
         border-radius: 12px;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
       }
 
       .brand-text {
@@ -208,14 +211,14 @@ const MENU_ITEMS: NavMenuItem[] = [
       .brand-title {
         font-size: 16px;
         font-weight: 700;
-        color: var(--zegel-text);
+        color: #ffffff;
         line-height: 1.2;
       }
 
       .brand-subtitle {
         font-size: 11px;
         font-weight: 500;
-        color: var(--zegel-muted);
+        color: #94a3b8;
         letter-spacing: 0.02em;
       }
 
@@ -224,8 +227,8 @@ const MENU_ITEMS: NavMenuItem[] = [
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--zegel-muted);
+        letter-spacing: 0.08em;
+        color: #94a3b8;
       }
 
       .nav-list {
@@ -236,29 +239,31 @@ const MENU_ITEMS: NavMenuItem[] = [
       }
 
       .nav-item {
-        border-radius: 10px !important;
-        color: #334155 !important;
+        border-radius: 12px !important;
+        color: #cbd5e1 !important;
+        --mdc-list-list-item-label-text-color: #cbd5e1;
+        --mdc-list-list-item-leading-icon-color: #94a3b8;
         transition: background-color 150ms ease, color 150ms ease;
       }
 
       .nav-item:hover {
-        background-color: #f1f5f9 !important;
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        --mdc-list-list-item-label-text-color: #ffffff;
+        --mdc-list-list-item-leading-icon-color: #e2e8f0;
       }
 
       .active-nav-item {
-        background: var(--zegel-primary-soft) !important;
-        color: var(--zegel-primary) !important;
+        background: rgba(59, 130, 246, 0.24) !important;
+        border: 1px solid rgba(96, 165, 250, 0.35);
+        --mdc-list-list-item-label-text-color: #ffffff;
+        --mdc-list-list-item-leading-icon-color: #93c5fd;
         font-weight: 600 !important;
-      }
-
-      .active-nav-item mat-icon {
-        color: var(--zegel-primary) !important;
       }
 
       .sidenav-footer {
         margin-top: auto;
         padding: 16px;
-        border-top: 1px solid var(--zegel-border);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .user-card {
@@ -267,15 +272,15 @@ const MENU_ITEMS: NavMenuItem[] = [
         gap: 10px;
         padding: 10px;
         border-radius: 12px;
-        background: var(--zegel-bg);
-        border: 1px solid var(--zegel-border);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
       }
 
       .user-avatar {
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: var(--zegel-primary);
+        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
         color: #ffffff;
         font-size: 13px;
         font-weight: 700;
@@ -294,7 +299,7 @@ const MENU_ITEMS: NavMenuItem[] = [
       .user-card-name {
         font-size: 13px;
         font-weight: 600;
-        color: var(--zegel-text);
+        color: #f8fafc;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -302,13 +307,17 @@ const MENU_ITEMS: NavMenuItem[] = [
 
       .user-card-role {
         font-size: 11px;
-        color: var(--zegel-muted);
+        color: #94a3b8;
       }
 
       .layout-content {
         display: flex;
         flex-direction: column;
-        background: var(--zegel-bg);
+        background:
+          radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.2) 0%, transparent 45%),
+          radial-gradient(circle at 85% 20%, rgba(99, 102, 241, 0.18) 0%, transparent 42%),
+          radial-gradient(circle at 60% 90%, rgba(14, 165, 233, 0.16) 0%, transparent 45%),
+          linear-gradient(135deg, #dbeafe 0%, #e0e7ff 50%, #e2e8f0 100%);
       }
 
       .layout-toolbar {
@@ -316,10 +325,11 @@ const MENU_ITEMS: NavMenuItem[] = [
         top: 0;
         z-index: 10;
         height: 64px;
-        background-color: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         color: var(--zegel-text);
-        border-bottom: 1px solid var(--zegel-border);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.65);
       }
 
       .toolbar-brand-mobile {
