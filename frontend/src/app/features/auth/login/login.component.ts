@@ -29,8 +29,8 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
               <i class="bi bi-mortarboard-fill"></i>
             </div>
             <div>
-              <span class="hero-kicker">Zegel · Escuela de Tecnología</span>
               <h1 class="h2 fw-bold mb-0 text-white">Zegel LMS</h1>
+              <p class="small mb-0 text-white-50">Escuela de Tecnología</p>
             </div>
           </div>
 

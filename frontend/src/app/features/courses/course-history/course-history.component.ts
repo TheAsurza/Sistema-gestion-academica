@@ -56,6 +56,16 @@ import { CourseService } from '../../../core/services/course.service';
             <div class="spinner-border text-primary mb-2" role="status"></div>
             <div>Cargando historial académico...</div>
           </div>
+        } @else if (error()) {
+          <div class="alert alert-danger d-flex align-items-center justify-content-between gap-3 mb-0">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ error() }}</span>
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="loadHistory()">
+              Reintentar
+            </button>
+          </div>
         } @else if (history().length === 0) {
           <div class="text-center py-5 text-muted">
             <i class="bi bi-award fs-1 d-block mb-2 opacity-50"></i>
@@ -142,6 +152,7 @@ export class CourseHistoryComponent implements OnInit {
 
   readonly history = signal<EnrollmentHistory[]>([]);
   readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   readonly approvedCount = computed(
     () =>
@@ -159,12 +170,19 @@ export class CourseHistoryComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.loadHistory();
+  }
+
+  loadHistory(): void {
+    this.loading.set(true);
+    this.error.set(null);
     this.courseService.getStudentHistory().subscribe({
       next: (items) => {
         this.history.set(items);
         this.loading.set(false);
       },
       error: () => {
+        this.error.set('No se pudo cargar tu historial académico.');
         this.loading.set(false);
       },
     });

@@ -80,6 +80,16 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
             <div class="spinner-border text-primary mb-2" role="status"></div>
             <div>Cargando usuarios...</div>
           </div>
+        } @else if (error()) {
+          <div class="alert alert-danger d-flex align-items-center justify-content-between gap-3 mb-0">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ error() }}</span>
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="loadUsers()">
+              Reintentar
+            </button>
+          </div>
         } @else if (filteredUsers().length === 0) {
           <div class="text-center py-5 text-muted">
             <i class="bi bi-people fs-1 d-block mb-2 opacity-50"></i>
@@ -247,6 +257,7 @@ export class UserListComponent implements OnInit {
 
   readonly users = signal<User[]>([]);
   readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
   readonly searchTerm = signal('');
   readonly roleFilter = signal<'all' | 'admin' | 'profesor' | 'estudiante'>('all');
 
@@ -286,12 +297,14 @@ export class UserListComponent implements OnInit {
 
   loadUsers(): void {
     this.loading.set(true);
+    this.error.set(null);
     this.userService.getUsers().subscribe({
       next: (users) => {
         this.users.set(users);
         this.loading.set(false);
       },
       error: () => {
+        this.error.set('No se pudieron cargar los usuarios.');
         this.loading.set(false);
       },
     });

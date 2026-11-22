@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Course, CoursePayload } from '../../../core/models/course.model';
@@ -93,6 +93,16 @@ import { CourseFormDialogComponent } from '../course-form-dialog/course-form-dia
           <div class="text-center py-5 text-muted">
             <div class="spinner-border text-primary mb-2" role="status"></div>
             <div>Cargando cursos...</div>
+          </div>
+        } @else if (error()) {
+          <div class="alert alert-danger d-flex align-items-center justify-content-between gap-3 mb-0">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ error() }}</span>
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="loadCourses()">
+              Reintentar
+            </button>
           </div>
         } @else if (filteredCourses().length === 0) {
           <div class="text-center py-5 text-muted">
@@ -283,6 +293,7 @@ export class CourseListComponent implements OnInit {
 
   readonly courses = signal<Course[]>([]);
   readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
   readonly searchTerm = signal('');
   readonly statusFilter = signal<'all' | 'active' | 'draft' | 'inactive'>('all');
 
@@ -314,18 +325,27 @@ export class CourseListComponent implements OnInit {
     });
   });
 
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.detailCourse()) {
+      this.detailCourse.set(null);
+    }
+  }
+
   ngOnInit(): void {
     this.loadCourses();
   }
 
   loadCourses(): void {
     this.loading.set(true);
+    this.error.set(null);
     this.courseService.getCourses().subscribe({
       next: (courses) => {
         this.courses.set(courses);
         this.loading.set(false);
       },
       error: () => {
+        this.error.set('No se pudieron cargar los cursos.');
         this.loading.set(false);
       },
     });

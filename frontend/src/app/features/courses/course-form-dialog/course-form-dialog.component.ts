@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   AsyncValidatorFn,
@@ -152,6 +152,7 @@ import { UserService } from '../../../core/services/user.service';
                       <input
                         type="text"
                         class="form-control form-control-sm"
+                        [class.is-invalid]="modGroup.get('title')?.invalid && modGroup.get('title')?.touched"
                         formControlName="title"
                         [placeholder]="'Título del módulo ' + ($index + 1)"
                       />
@@ -160,6 +161,7 @@ import { UserService } from '../../../core/services/user.service';
                       <input
                         type="number"
                         class="form-control form-control-sm"
+                        [class.is-invalid]="modGroup.get('hours')?.invalid && modGroup.get('hours')?.touched"
                         formControlName="hours"
                         min="1"
                         placeholder="Horas"
@@ -219,6 +221,11 @@ export class CourseFormDialogComponent implements OnInit {
 
   readonly isAdmin = this.authService.hasRole(['admin']);
   readonly teachers = signal<User[]>([]);
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.cancelled.emit();
+  }
 
   isEdit = false;
   private originalCode = '';

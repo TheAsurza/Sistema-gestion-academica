@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject } from '@angular/core';
 import {
   AbstractControl,
   AsyncValidatorFn,
@@ -132,6 +132,11 @@ export class UserFormDialogComponent implements OnInit {
   @Input() user: User | null = null;
   @Output() saved = new EventEmitter<UserPayload>();
   @Output() cancelled = new EventEmitter<void>();
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.cancelled.emit();
+  }
 
   isEdit = false;
   private originalEmail = '';
