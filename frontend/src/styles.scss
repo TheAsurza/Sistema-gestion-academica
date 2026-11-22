@@ -5,24 +5,59 @@
   --mat-sys-plain-font-family: var(--zegel-font);
   --mat-sys-brand-font-family: var(--zegel-font);
 
-  --zegel-primary: #2563eb;
-  --zegel-primary-dark: #1d4ed8;
-  --zegel-primary-soft: rgba(37, 99, 235, 0.12);
-  --zegel-accent: #ea580c;
-  --zegel-bg: #e2e8f0;
-  --zegel-glass-bg: rgba(255, 255, 255, 0.72);
-  --zegel-glass-border: rgba(255, 255, 255, 0.65);
-  --zegel-surface: rgba(255, 255, 255, 0.82);
-  --zegel-text: #0f172a;
+  /* Core Claymorphism Palette */
+  --zegel-primary: #4f46e5;
+  --zegel-primary-dark: #3730a3;
+  --zegel-primary-soft: #e0e7ff;
+  --zegel-primary-border: #c7d2fe;
+  --zegel-accent: #f97316;
+  --zegel-bg: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 52%, #fef3c7 100%);
+  --zegel-surface: #ffffff;
+  --zegel-surface-soft: #f8faff;
+  --zegel-text: #1e293b;
   --zegel-muted: #475569;
-  --zegel-border: rgba(148, 163, 184, 0.28);
-  --zegel-success: #059669;
-  --zegel-success-soft: rgba(16, 185, 129, 0.14);
-  --zegel-warning: #d97706;
-  --zegel-warning-soft: rgba(245, 158, 11, 0.14);
-  --zegel-error: #dc2626;
-  --zegel-error-soft: rgba(239, 68, 68, 0.12);
-  --zegel-radius: 16px;
+  --zegel-border: #cbd5e1;
+
+  /* Semantic Status & Role Tokens */
+  --zegel-success: #047857;
+  --zegel-success-soft: #d1fae5;
+  --zegel-success-border: #6ee7b7;
+  --zegel-warning: #b45309;
+  --zegel-warning-soft: #fef3c7;
+  --zegel-warning-border: #fcd34d;
+  --zegel-error: #b91c1c;
+  --zegel-error-soft: #fee2e2;
+  --zegel-error-border: #fca5a5;
+  --zegel-indigo: #5b21b6;
+  --zegel-indigo-soft: #ede9fe;
+  --zegel-indigo-border: #ddd6fe;
+  --zegel-neutral-soft: #f1f5f9;
+  --zegel-neutral-border: #cbd5e1;
+
+  /* Claymorphism Geometry, Borders & Double Shadows */
+  --zegel-radius: 22px;
+  --zegel-radius-sm: 14px;
+  --zegel-radius-pill: 9999px;
+  --zegel-clay-border: 3px solid #dbeafe;
+  --zegel-clay-shadow:
+    0 10px 24px rgba(79, 70, 229, 0.12),
+    inset -4px -4px 10px rgba(148, 163, 184, 0.18),
+    inset 4px 4px 10px rgba(255, 255, 255, 0.95);
+  --zegel-clay-shadow-hover:
+    0 14px 30px rgba(79, 70, 229, 0.18),
+    inset -4px -4px 10px rgba(148, 163, 184, 0.2),
+    inset 4px 4px 10px rgba(255, 255, 255, 0.98);
+  --zegel-clay-shadow-sm:
+    0 4px 10px rgba(79, 70, 229, 0.12),
+    inset -2px -2px 5px rgba(148, 163, 184, 0.16),
+    inset 2px 2px 6px rgba(255, 255, 255, 0.92);
+  --zegel-ease-clay: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Hero & Sidenav Tokens */
+  --zegel-hero-bg: linear-gradient(135deg, #4338ca 0%, #6366f1 55%, #818cf8 100%);
+  --zegel-hero-text: #ffffff;
+  --zegel-hero-muted: #e0e7ff;
+  --zegel-sidenav-bg: #eef2ff;
 }
 
 html,
@@ -33,11 +68,7 @@ body {
 body {
   margin: 0;
   font-family: var(--zegel-font);
-  background:
-    radial-gradient(circle at 12% 18%, rgba(59, 130, 246, 0.22) 0%, transparent 42%),
-    radial-gradient(circle at 88% 12%, rgba(99, 102, 241, 0.2) 0%, transparent 40%),
-    radial-gradient(circle at 75% 88%, rgba(14, 165, 233, 0.18) 0%, transparent 44%),
-    linear-gradient(135deg, #e0e7ff 0%, #eff6ff 48%, #e2e8f0 100%);
+  background: var(--zegel-bg);
   background-attachment: fixed;
   color: var(--zegel-text);
   -webkit-font-smoothing: antialiased;
@@ -58,27 +89,45 @@ th {
   font-family: var(--zegel-font);
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--zegel-primary);
+  outline-offset: 2px;
+}
+
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
 .mat-mdc-card {
-  background: var(--zegel-glass-bg) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--zegel-glass-border) !important;
+  background-color: var(--zegel-surface) !important;
+  border: var(--zegel-clay-border) !important;
   border-radius: var(--zegel-radius) !important;
-  box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  box-shadow: var(--zegel-clay-shadow) !important;
+  transition: transform 200ms var(--zegel-ease-clay), box-shadow 200ms ease;
 }
 
 .mat-mdc-dialog-surface {
-  background: rgba(255, 255, 255, 0.88) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: 18px !important;
+  background-color: var(--zegel-surface) !important;
+  border: var(--zegel-clay-border);
+  border-radius: var(--zegel-radius) !important;
+  box-shadow: var(--zegel-clay-shadow-hover) !important;
+}
+
+.mat-mdc-unelevated-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button {
+  border-radius: var(--zegel-radius-sm) !important;
+  transition: transform 180ms var(--zegel-ease-clay), box-shadow 180ms ease !important;
+}
+
+.mat-mdc-unelevated-button:not(:disabled):active,
+.mat-mdc-outlined-button:not(:disabled):active {
+  transform: scale(0.97);
 }
 
 .mat-mdc-table {
@@ -86,16 +135,16 @@ th {
 }
 
 .mat-mdc-header-row {
-  background: rgba(241, 245, 249, 0.7) !important;
+  background-color: var(--zegel-primary-soft) !important;
 }
 
 .mat-mdc-header-cell {
-  color: var(--zegel-muted) !important;
+  color: var(--zegel-primary-dark) !important;
   font-size: 12px !important;
   font-weight: 700 !important;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom-color: var(--zegel-border) !important;
+  border-bottom: 2px solid var(--zegel-primary-border) !important;
 }
 
 .mat-mdc-row {
@@ -103,7 +152,7 @@ th {
 }
 
 .mat-mdc-row:hover {
-  background-color: rgba(255, 255, 255, 0.55);
+  background-color: var(--zegel-surface-soft);
 }
 
 .mat-mdc-cell {

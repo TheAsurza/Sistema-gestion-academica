@@ -335,18 +335,19 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
         justify-content: space-between;
         gap: 20px;
         flex-wrap: wrap;
-        padding: 24px 28px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        color: #ffffff;
-        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.18);
+        padding: 26px 30px;
+        border-radius: var(--zegel-radius);
+        border: 3px solid var(--zegel-primary-border);
+        background: var(--zegel-hero-bg);
+        color: var(--zegel-hero-text);
+        box-shadow: var(--zegel-clay-shadow);
       }
 
       .role-pill {
         display: inline-block;
-        padding: 4px 10px;
-        border-radius: 9999px;
-        background: rgba(255, 255, 255, 0.18);
+        padding: 4px 12px;
+        border-radius: var(--zegel-radius-pill);
+        background: rgba(255, 255, 255, 0.22);
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
@@ -363,14 +364,15 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
       .welcome-copy p {
         margin: 6px 0 0;
         font-size: 14px;
-        color: #dbeafe;
+        color: var(--zegel-hero-muted);
       }
 
       .banner-cta {
-        background-color: #ffffff !important;
-        color: #1d4ed8 !important;
-        font-weight: 600 !important;
-        border-radius: 10px !important;
+        background-color: var(--zegel-surface) !important;
+        color: var(--zegel-primary-dark) !important;
+        font-weight: 700 !important;
+        border: 2px solid var(--zegel-primary-border) !important;
+        box-shadow: var(--zegel-clay-shadow-sm);
       }
 
       .loading-state {
@@ -400,8 +402,8 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
       }
 
       .stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07) !important;
+        transform: translateY(-3px);
+        box-shadow: var(--zegel-clay-shadow-hover) !important;
       }
 
       .stat-row {
@@ -413,7 +415,7 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
 
       .stat-label {
         font-size: 13px;
-        font-weight: 500;
+        font-weight: 600;
         color: var(--zegel-muted);
       }
 
@@ -426,33 +428,38 @@ import { RoleLabelPipe } from '../../shared/pipes/role-label.pipe';
       }
 
       .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        box-shadow: var(--zegel-clay-shadow-sm);
       }
 
       .tone-blue {
         background: var(--zegel-primary-soft);
         color: var(--zegel-primary);
+        border: 2px solid var(--zegel-primary-border);
       }
 
       .tone-indigo {
-        background: #eef2ff;
-        color: #4f46e5;
+        background: var(--zegel-indigo-soft);
+        color: var(--zegel-indigo);
+        border: 2px solid var(--zegel-indigo-border);
       }
 
       .tone-amber {
         background: var(--zegel-warning-soft);
         color: var(--zegel-warning);
+        border: 2px solid var(--zegel-warning-border);
       }
 
       .tone-green {
         background: var(--zegel-success-soft);
         color: var(--zegel-success);
+        border: 2px solid var(--zegel-success-border);
       }
 
       .two-col-grid {

@@ -153,13 +153,13 @@ import { CourseService } from '../../../core/services/course.service';
       .page-header h1 {
         margin: 0;
         font-size: 24px;
-        font-weight: 600;
-        color: #1a237e;
+        font-weight: 700;
+        color: var(--zegel-text);
       }
 
       .subtitle {
         margin: 4px 0 0;
-        color: #616161;
+        color: var(--zegel-muted);
         font-size: 14px;
       }
 
@@ -169,22 +169,17 @@ import { CourseService } from '../../../core/services/course.service';
         gap: 16px;
       }
 
-      .summary-card,
-      .table-card {
-        border-radius: 12px;
-      }
-
       .summary-label {
         font-size: 13px;
-        color: #616161;
-        font-weight: 500;
+        color: var(--zegel-muted);
+        font-weight: 600;
       }
 
       .summary-value {
         margin-top: 6px;
         font-size: 28px;
         font-weight: 700;
-        color: #1565c0;
+        color: var(--zegel-primary);
       }
 
       .table-wrapper {
@@ -196,36 +191,36 @@ import { CourseService } from '../../../core/services/course.service';
       }
 
       .pending-text {
-        color: #757575;
+        color: var(--zegel-muted);
         font-style: italic;
       }
 
       .status-chip {
         display: inline-flex;
         align-items: center;
-        padding: 2px 10px;
-        border-radius: 9999px;
+        padding: 3px 10px;
+        border-radius: var(--zegel-radius-pill);
         font-size: 12px;
-        font-weight: 500;
+        font-weight: 600;
         line-height: 1.5;
       }
 
       .chip-approved {
-        background-color: #e8f5e9;
-        color: #1b5e20;
-        border: 1px solid #a5d6a7;
+        background-color: var(--zegel-success-soft);
+        color: var(--zegel-success);
+        border: 2px solid var(--zegel-success-border);
       }
 
       .chip-failed {
-        background-color: #ffebee;
-        color: #c62828;
-        border: 1px solid #ef9a9a;
+        background-color: var(--zegel-error-soft);
+        color: var(--zegel-error);
+        border: 2px solid var(--zegel-error-border);
       }
 
       .chip-pending {
-        background-color: #f5f5f5;
-        color: #616161;
-        border: 1px solid #e0e0e0;
+        background-color: var(--zegel-neutral-soft);
+        color: var(--zegel-muted);
+        border: 2px solid var(--zegel-neutral-border);
       }
 
       .loading-state,
@@ -236,7 +231,7 @@ import { CourseService } from '../../../core/services/course.service';
         justify-content: center;
         gap: 10px;
         padding: 40px 16px;
-        color: #757575;
+        color: var(--zegel-muted);
       }
     `,
   ],

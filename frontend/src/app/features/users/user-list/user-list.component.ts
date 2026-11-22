@@ -229,26 +229,27 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
       }
 
       .filter-pill {
-        border: 1px solid var(--zegel-border);
+        border: 2px solid var(--zegel-border);
         background: var(--zegel-surface);
         color: var(--zegel-muted);
-        border-radius: 9999px;
+        border-radius: var(--zegel-radius-pill);
         padding: 6px 14px;
         font-size: 12px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 150ms ease;
+        box-shadow: var(--zegel-clay-shadow-sm);
+        transition: all 150ms var(--zegel-ease-clay);
       }
 
       .filter-pill:hover {
-        background: #f1f5f9;
+        background: var(--zegel-surface-soft);
         color: var(--zegel-text);
       }
 
       .filter-pill.active {
         background: var(--zegel-primary-soft);
         color: var(--zegel-primary-dark);
-        border-color: #bfdbfe;
+        border-color: var(--zegel-primary-border);
       }
 
       .table-wrapper {
@@ -262,38 +263,43 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
       .self-badge {
         display: inline-block;
         margin-left: 8px;
-        padding: 1px 8px;
-        border-radius: 9999px;
-        background-color: #e3f2fd;
-        color: #1565c0;
+        padding: 2px 8px;
+        border-radius: var(--zegel-radius-pill);
+        background-color: var(--zegel-primary-soft);
+        color: var(--zegel-primary-dark);
+        border: 1px solid var(--zegel-primary-border);
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 700;
       }
 
       .role-chip {
         display: inline-flex;
         align-items: center;
-        padding: 2px 10px;
-        border-radius: 9999px;
+        padding: 3px 10px;
+        border-radius: var(--zegel-radius-pill);
         font-size: 12px;
-        font-weight: 500;
-        background-color: #eceff1;
-        color: #37474f;
+        font-weight: 600;
+        background-color: var(--zegel-neutral-soft);
+        color: var(--zegel-text);
+        border: 2px solid var(--zegel-neutral-border);
       }
 
       .role-chip[data-role='admin'] {
-        background-color: #ede7f6;
-        color: #4527a0;
+        background-color: var(--zegel-indigo-soft);
+        color: var(--zegel-indigo);
+        border-color: var(--zegel-indigo-border);
       }
 
       .role-chip[data-role='profesor'] {
-        background-color: #e3f2fd;
-        color: #1565c0;
+        background-color: var(--zegel-primary-soft);
+        color: var(--zegel-primary-dark);
+        border-color: var(--zegel-primary-border);
       }
 
       .role-chip[data-role='estudiante'] {
-        background-color: #e8f5e9;
-        color: #2e7d32;
+        background-color: var(--zegel-success-soft);
+        color: var(--zegel-success);
+        border-color: var(--zegel-success-border);
       }
 
       .actions-cell {

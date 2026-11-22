@@ -352,26 +352,27 @@ export class CourseDetailDialogComponent {
       }
 
       .filter-pill {
-        border: 1px solid var(--zegel-border);
+        border: 2px solid var(--zegel-border);
         background: var(--zegel-surface);
         color: var(--zegel-muted);
-        border-radius: 9999px;
+        border-radius: var(--zegel-radius-pill);
         padding: 6px 14px;
         font-size: 12px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 150ms ease;
+        box-shadow: var(--zegel-clay-shadow-sm);
+        transition: all 150ms var(--zegel-ease-clay);
       }
 
       .filter-pill:hover {
-        background: #f1f5f9;
+        background: var(--zegel-surface-soft);
         color: var(--zegel-text);
       }
 
       .filter-pill.active {
         background: var(--zegel-primary-soft);
         color: var(--zegel-primary-dark);
-        border-color: #bfdbfe;
+        border-color: var(--zegel-primary-border);
       }
 
       .table-wrapper {

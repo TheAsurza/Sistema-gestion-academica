@@ -9,19 +9,19 @@ interface StatusStyle {
 
 const STATUS_STYLES: Record<CourseStatus, StatusStyle> = {
   active: {
-    backgroundColor: '#e8f5e9',
-    color: '#1b5e20',
-    borderColor: '#a5d6a7',
+    backgroundColor: 'var(--zegel-success-soft)',
+    color: 'var(--zegel-success)',
+    borderColor: 'var(--zegel-success-border)',
   },
   draft: {
-    backgroundColor: '#fff8e1',
-    color: '#e65100',
-    borderColor: '#ffe082',
+    backgroundColor: 'var(--zegel-warning-soft)',
+    color: 'var(--zegel-warning)',
+    borderColor: 'var(--zegel-warning-border)',
   },
   inactive: {
-    backgroundColor: '#f5f5f5',
-    color: '#616161',
-    borderColor: '#e0e0e0',
+    backgroundColor: 'var(--zegel-neutral-soft)',
+    color: 'var(--zegel-muted)',
+    borderColor: 'var(--zegel-neutral-border)',
   },
 };
 
@@ -48,7 +48,7 @@ export class HighlightStatusDirective {
 
   @HostBinding('style.border')
   get border(): string {
-    return `1px solid ${this.currentStyle.borderColor}`;
+    return `2px solid ${this.currentStyle.borderColor}`;
   }
 
   @HostBinding('style.display')

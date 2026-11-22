@@ -31,7 +31,7 @@ import { RouterLink } from '@angular/router';
         align-items: center;
         justify-content: center;
         padding: 24px;
-        background: #f5f7fa;
+        background: var(--zegel-bg);
       }
 
       .error-card {
@@ -49,6 +49,7 @@ import { RouterLink } from '@angular/router';
         font-size: 48px;
         width: 48px;
         height: 48px;
+        color: var(--zegel-error);
       }
 
       .error-code {
@@ -56,18 +57,18 @@ import { RouterLink } from '@angular/router';
         font-size: 56px;
         font-weight: 700;
         line-height: 1;
-        color: #c62828;
+        color: var(--zegel-error);
       }
 
       .error-title {
         margin: 0;
         font-size: 22px;
-        font-weight: 500;
+        font-weight: 600;
       }
 
       .error-message {
         margin: 0 0 8px;
-        color: #616161;
+        color: var(--zegel-muted);
       }
     `,
   ],

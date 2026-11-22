@@ -184,15 +184,12 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         min-height: 100vh;
         display: grid;
         grid-template-columns: 1.05fr 0.95fr;
-        background:
-          radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.22) 0%, transparent 45%),
-          radial-gradient(circle at 70% 85%, rgba(99, 102, 241, 0.18) 0%, transparent 45%),
-          linear-gradient(135deg, #dbeafe 0%, #e0e7ff 55%, #e2e8f0 100%);
+        background: var(--zegel-bg);
       }
 
       .hero-panel {
-        background: radial-gradient(circle at top right, #3b82f6 0%, #1d4ed8 45%, #0f172a 100%);
-        color: #ffffff;
+        background: var(--zegel-hero-bg);
+        color: var(--zegel-hero-text);
         padding: 48px;
         display: flex;
         align-items: center;
@@ -213,12 +210,13 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
       }
 
       .hero-logo {
-        width: 56px;
-        height: 56px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.16);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.25);
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        background: var(--zegel-surface);
+        color: var(--zegel-primary);
+        border: 3px solid var(--zegel-primary-border);
+        box-shadow: var(--zegel-clay-shadow);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -233,10 +231,10 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
       .hero-kicker {
         display: block;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: #bfdbfe;
+        color: var(--zegel-hero-muted);
       }
 
       .hero-brand h1 {
@@ -250,41 +248,42 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         margin: 0;
         font-size: 15px;
         line-height: 1.6;
-        color: #e2e8f0;
+        color: var(--zegel-hero-muted);
       }
 
       .hero-highlights {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 14px;
       }
 
       .highlight-card {
         display: flex;
         align-items: center;
         gap: 14px;
-        padding: 14px 16px;
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.16);
+        padding: 16px 18px;
+        border-radius: var(--zegel-radius);
+        background: var(--zegel-surface);
+        color: var(--zegel-text);
+        border: var(--zegel-clay-border);
+        box-shadow: var(--zegel-clay-shadow);
       }
 
       .highlight-card mat-icon {
-        color: #93c5fd;
+        color: var(--zegel-primary);
         flex-shrink: 0;
       }
 
       .highlight-card strong {
         display: block;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 700;
       }
 
       .highlight-card span {
         display: block;
         font-size: 12px;
-        color: #cbd5e1;
+        color: var(--zegel-muted);
       }
 
       .form-panel {
@@ -298,10 +297,6 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         width: 100%;
         max-width: 440px;
         padding: 32px !important;
-        background: rgba(255, 255, 255, 0.74) !important;
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-        border: 1px solid rgba(255, 255, 255, 0.7) !important;
       }
 
       .card-top {
@@ -349,9 +344,9 @@ const DEMO_CREDENTIALS: DemoCredential[] = [
         align-items: center;
         gap: 8px;
         padding: 10px 12px;
-        border-radius: 10px;
+        border-radius: var(--zegel-radius-sm);
         background: var(--zegel-error-soft);
-        border: 1px solid #fecaca;
+        border: 2px solid var(--zegel-error-border);
         color: var(--zegel-error);
         font-size: 13px;
       }

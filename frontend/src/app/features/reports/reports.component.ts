@@ -177,13 +177,13 @@ interface CourseStatusBreakdownRow {
       .page-header h1 {
         margin: 0;
         font-size: 24px;
-        font-weight: 600;
-        color: #1a237e;
+        font-weight: 700;
+        color: var(--zegel-text);
       }
 
       .subtitle {
         margin: 4px 0 0;
-        color: #616161;
+        color: var(--zegel-muted);
         font-size: 14px;
       }
 
@@ -193,19 +193,13 @@ interface CourseStatusBreakdownRow {
         justify-content: center;
         gap: 12px;
         padding: 40px 16px;
-        color: #616161;
+        color: var(--zegel-muted);
       }
 
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 16px;
-      }
-
-      .stat-card,
-      .breakdown-card,
-      .error-card {
-        border-radius: 12px;
       }
 
       .stat-header {
@@ -217,14 +211,14 @@ interface CourseStatusBreakdownRow {
 
       .stat-label {
         font-size: 13px;
-        font-weight: 500;
-        color: #616161;
+        font-weight: 600;
+        color: var(--zegel-muted);
       }
 
       .stat-value {
         font-size: 32px;
         font-weight: 700;
-        color: #1565c0;
+        color: var(--zegel-primary);
       }
 
       .breakdown-grid {
