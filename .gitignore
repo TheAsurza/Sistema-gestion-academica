@@ -1,4 +1,7 @@
 .superpowers/
+docs/
+*.pdf
+frontend/.vscode/
 frontend/node_modules/
 frontend/dist/
 frontend/.angular/
