@@ -91,20 +91,40 @@ import { UserService } from '../../../core/services/user.service';
             </div>
           </div>
 
-          <div>
-            <label class="form-label small fw-semibold">Título del curso</label>
-            <input
-              type="text"
-              class="form-control"
-              [class.is-invalid]="form.controls.title.invalid && form.controls.title.touched"
-              formControlName="title"
-              placeholder="Ej. Desarrollo de Interfaces 3"
-            />
-            @if (form.controls.title.hasError('required') && form.controls.title.touched) {
-              <div class="text-danger small mt-1">El título es obligatorio.</div>
-            } @else if (form.controls.title.hasError('minlength') && form.controls.title.touched) {
-              <div class="text-danger small mt-1">Mínimo 3 caracteres.</div>
-            }
+          <div class="row g-3">
+            <div class="col-12 col-sm-7">
+              <label class="form-label small fw-semibold">Título del curso</label>
+              <input
+                type="text"
+                class="form-control"
+                [class.is-invalid]="form.controls.title.invalid && form.controls.title.touched"
+                formControlName="title"
+                placeholder="Ej. Desarrollo de Interfaces 3"
+              />
+              @if (form.controls.title.hasError('required') && form.controls.title.touched) {
+                <div class="text-danger small mt-1">El título es obligatorio.</div>
+              } @else if (form.controls.title.hasError('minlength') && form.controls.title.touched) {
+                <div class="text-danger small mt-1">Mínimo 3 caracteres.</div>
+              }
+            </div>
+
+            <div class="col-12 col-sm-5">
+              <label class="form-label small fw-semibold">Carrera</label>
+              <input
+                type="text"
+                list="zegel-careers"
+                class="form-control"
+                [class.is-invalid]="form.controls.career.invalid && form.controls.career.touched"
+                formControlName="career"
+                placeholder="Ej. Desarrollo de Sistemas..."
+              />
+              <datalist id="zegel-careers">
+                <option value="Desarrollo de Sistemas de Información"></option>
+                <option value="Diseño de Experiencia Digital"></option>
+                <option value="Fundamentos Tecnológicos"></option>
+                <option value="Administración de Negocios"></option>
+              </datalist>
+            </div>
           </div>
 
           <div>
@@ -237,6 +257,7 @@ export class CourseFormDialogComponent implements OnInit {
       [this.codeAvailableValidator()],
     ],
     title: ['', [Validators.required, Validators.minLength(3)]],
+    career: ['Desarrollo de Sistemas de Información', [Validators.required, Validators.minLength(3)]],
     description: [''],
     credits: [3, [Validators.required, Validators.min(1), Validators.max(10)]],
     status: ['active' as CourseStatus, [Validators.required]],
@@ -256,6 +277,7 @@ export class CourseFormDialogComponent implements OnInit {
       this.form.patchValue({
         code: this.course.code,
         title: this.course.title,
+        career: this.course.career || 'Desarrollo de Sistemas de Información',
         description: this.course.description ?? '',
         credits: this.course.credits,
         status: this.course.status,
@@ -313,6 +335,7 @@ export class CourseFormDialogComponent implements OnInit {
     const payload: CoursePayload = {
       code: raw.code.trim().toUpperCase(),
       title: raw.title.trim(),
+      career: raw.career.trim(),
       description: raw.description.trim(),
       credits: Number(raw.credits),
       status: raw.status,

@@ -1,20 +1,20 @@
-# Zegel — Plataforma de Gestión de Cursos y Usuarios (Desarrollo de Interfaces III)
+# Zegel — Plataforma de Gestión Académica (Desarrollo de Interfaces III)
 
-Aplicación web **SPA (Single Page Application)** desarrollada con **Angular 22 Standalone + Bootstrap 5** y un backend **REST API en PHP 8+ (PDO / MySQL)** con autenticación **JWT (HS256)** y control de acceso basado en roles (**RBAC**).
+Aplicación web **SPA (Single Page Application)** desarrollada con **Angular 22 Standalone + Bootstrap 5** y un backend **API REST modular en PHP 8+ (PDO / MySQL)** con autenticación **JWT (HS256)** y control de acceso basado en roles (**RBAC**: `admin`, `profesor`, `estudiante`).
 
 ---
 
-## Arquitectura General
+## Tecnologías Utilizadas
 
-- **`frontend/`**: Aplicación Angular Standalone (`@angular/core`, `bootstrap`, `bootstrap-icons`, `rxjs`) con rutas lazy-loaded, layout principal autenticado (`MainLayoutComponent`), 3 functional guards (`authGuard`, `loginGuard`, `roleGuard`), 2 interceptores HTTP funcionales (`authInterceptor`, `errorInterceptor`), formularios reactivos con `FormArray` y validadores asíncronos, pipes personalizados y directivas estructurales/de atributo.
-- **`backend/`**: API REST en PHP 8+ sin frameworks externos, con conexión **PDO** a MySQL (`zegel_cursos_db`), autenticación **JWT HS256** (`backend/helpers/jwt.php`, TTL de `3600` segundos), cabeceras CORS y validación estricta de roles en cada endpoint (`backend/index.php`, `backend/helpers/response.php`).
+- **Frontend (`frontend/`)**: Angular 22 Standalone, TypeScript, Bootstrap 5, Bootstrap Icons y RxJS (`HttpClient`, rutas lazy-loaded, 3 guards funcionales, 2 interceptores HTTP funcionales, formularios reactivos con `FormArray` y validadores asíncronos, pipes y directivas personalizadas).
+- **Backend (`backend/`)**: PHP 8.1+ (sin frameworks externos), PDO para MySQL (`zegel_cursos_db`), JWT firmado con HMAC-SHA256 (`HS256`, vigencia de `3600` segundos), cabeceras CORS y controladores modulares en `backend/controllers/`.
+- **Base de datos**: MySQL 8+ / MariaDB (`backend/database.sql`).
 
 ---
 
 ## Prerrequisitos
 
 - **Node.js** (v20+ recomendado) y **npm**
-- **Angular CLI** (`@angular/cli` v22+)
 - **PHP 8.1+** con extensión `pdo_mysql` habilitada
 - **MySQL 8+ / MariaDB** (o paquete **XAMPP** / Laragon)
 
@@ -22,31 +22,36 @@ Aplicación web **SPA (Single Page Application)** desarrollada con **Angular 22 
 
 ## Instalación y Ejecución Paso a Paso
 
-### 1. Base de datos MySQL
+### 1. Importar la base de datos MySQL
 
-Importar el script SQL `backend/database.sql` en MySQL o phpMyAdmin. Este script crea la base de datos `zegel_cursos_db`, las tablas (`users`, `courses`, `course_modules`, `enrollments`) y los datos semilla:
+Ejecutar el script `backend/database.sql` desde MySQL Workbench, phpMyAdmin o terminal. Este script crea la base de datos `zegel_cursos_db`, las 8 tablas (`users`, `courses`, `course_modules`, `enrollments`, `agenda_events`, `attendance_stats`, `notices`, `course_attendance`) y los datos semilla:
 
 ```bash
 mysql -u root -p < backend/database.sql
 ```
 
-### 2. Configuración del Backend
+### 2. Configurar credenciales de MySQL en el Backend
 
-Verificar los parámetros de conexión en `backend/config/database.php` (por defecto usa `127.0.0.1:3306`, base de datos `zegel_cursos_db`, usuario `root` y contraseña vacía, o variables de entorno `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`, `JWT_SECRET`).
+Revisar `backend/config/database.php`. Por defecto se conecta a `127.0.0.1:3306` (`zegel_cursos_db`, usuario `root`). Si tu servidor MySQL tiene otra contraseña (por ejemplo vacía `''` en XAMPP), ajústala en `backend/config/database.php` o define la variable de entorno `DB_PASS` antes de iniciar PHP:
 
-### 3. Iniciar el Servidor PHP
+```powershell
+# Ejemplo en PowerShell (si tu MySQL no tiene contraseña)
+$env:DB_PASS=""
+```
 
-Desde la raíz del proyecto, levantar el servidor embebido de PHP apuntando a `backend/`:
+### 3. Iniciar el Backend (PHP)
+
+Desde la **raíz del proyecto**, iniciar el servidor embebido de PHP apuntando a `backend/`:
 
 ```bash
 php -S localhost:8000 -t backend
 ```
 
-> **Alternativa Apache/XAMPP:** Ubicar la carpeta del proyecto bajo `htdocs` y ajustar `apiUrl` en `frontend/src/environments/environment.ts` si la URL base difiere de `http://localhost:8000/api`.
+La API quedará disponible en `http://localhost:8000/api`.
 
-### 4. Instalar y Ejecutar el Frontend
+### 4. Instalar dependencias e iniciar el Frontend (Angular)
 
-En otra terminal:
+En otra terminal, dentro de `frontend/`:
 
 ```bash
 cd frontend
@@ -54,20 +59,20 @@ npm install
 npm start
 ```
 
-La aplicación estará disponible en: **http://localhost:4200**
+Abrir en el navegador: **http://localhost:4200**
 
 ---
 
 ## Credenciales de Prueba
 
-Todos los usuarios semilla definidos en `backend/database.sql` utilizan la contraseña: **`password`** (almacenada con hash bcrypt).
+Todos los usuarios semilla de `backend/database.sql` tienen la contraseña **`password`** (almacenada con `bcrypt`):
 
-| Rol | Nombre | Correo electrónico | Contraseña |
-| :--- | :--- | :--- | :--- |
-| `admin` | Administrador Zegel | `admin@zegel.edu.pe` | `password` |
-| `profesor` | Prof. Carlos Mendoza | `carlos.mendoza@zegel.edu.pe` | `password` |
-| `profesor` | Prof. Lucía Paredes | `lucia.paredes@zegel.edu.pe` | `password` |
-| `estudiante` | Anthony Quispe | `anthony.quispe@zegel.edu.pe` | `password` |
+| Rol | Código | Nombre | Correo electrónico | Contraseña |
+| :--- | :--- | :--- | :--- | :--- |
+| `admin` | `ADM-2026-0001` | Administrador Zegel | `admin@zegel.edu.pe` | `password` |
+| `profesor` | `DOC-2026-0001` | Prof. Carlos Mendoza | `carlos.mendoza@zegel.edu.pe` | `password` |
+| `profesor` | `DOC-2026-0002` | Prof. Lucía Paredes | `lucia.paredes@zegel.edu.pe` | `password` |
+| `estudiante` | `ALU-2026-0001` | Anthony Quispe | `anthony.quispe@zegel.edu.pe` | `password` |
 
 ---
 
@@ -77,57 +82,54 @@ Todos los usuarios semilla definidos en `backend/database.sql` utilizan la contr
 .
 ├── backend/
 │   ├── config/
-│   │   └── database.php          # Conexión PDO MySQL y constantes JWT
+│   │   └── database.php              # Conexión PDO MySQL y constantes JWT
+│   ├── controllers/
+│   │   ├── auth.php                  # Login y emisión de JWT
+│   │   ├── courses.php               # CRUD de cursos, módulos, vista docente y vista alumno
+│   │   ├── users.php                 # Profesores, alumnos, administrativos y código único
+│   │   ├── enrollments.php           # Matrículas, retiros, historial y notas
+│   │   ├── attendance.php            # Asistencia semanal y por sesión de curso
+│   │   ├── reports.php               # Reportes académicos (admin y docente)
+│   │   └── dashboard.php             # Agenda y avisos institucionales
 │   ├── helpers/
-│   │   ├── jwt.php               # Codificación/decodificación JWT HS256 (exp)
-│   │   └── response.php          # CORS, jsonResponse(), requireAuth(), requireRole()
-│   ├── database.sql              # Esquema relacional y datos semilla
-│   └── index.php                 # Router REST y controladores (/api/*)
-├── docs/
-│   └── entregable-final.md       # Documento base del entregable final (exportable a PDF)
+│   │   ├── jwt.php                   # Codificación y validación JWT HS256
+│   │   └── response.php              # CORS, jsonResponse(), requireAuth(), requireRole()
+│   ├── database.sql                  # Esquema relacional (8 tablas) y datos semilla
+│   └── index.php                     # Enrutador REST (/api/*)
 ├── frontend/
 │   └── src/
 │       ├── environments/
-│       │   └── environment.ts    # apiUrl: http://localhost:8000/api
+│       │   └── environment.ts        # apiUrl: http://localhost:8000/api
 │       └── app/
-│           ├── app.config.ts     # provideRouter + provideHttpClient(withInterceptors(...))
-│           ├── app.routes.ts     # Rutas principales, lazy loading, layout y wildcard 404
-│           ├── core/
-│           │   ├── guards/       # authGuard, loginGuard, roleGuard
-│           │   ├── interceptors/ # authInterceptor, errorInterceptor
-│           │   ├── models/       # Interfaces TypeScript (Auth, Course, User, Enrollment, Report)
-│           │   └── services/     # AuthService, CourseService, UserService, ReportService
+│           ├── app.config.ts         # provideRouter + provideHttpClient(withInterceptors(...))
+│           ├── app.routes.ts         # Rutas lazy-loaded, layout protegido y 404
+│           └── core/
+│               ├── guards/           # authGuard, loginGuard, roleGuard
+│               ├── interceptors/     # authInterceptor, errorInterceptor
+│               ├── models/           # Interfaces TypeScript
+│               └── services/         # AuthService, CourseService, UserService, ReportService, DashboardWidgetService, ToastService
 │           ├── features/
-│           │   ├── auth/         # LoginComponent
-│           │   ├── dashboard/    # DashboardComponent
-│           │   ├── courses/      # CourseListComponent, CourseFormDialogComponent, CourseHistoryComponent
-│           │   ├── users/        # UserListComponent, UserFormDialogComponent
-│           │   └── reports/      # ReportsComponent
+│           │   ├── auth/             # LoginComponent
+│           │   ├── dashboard/        # DashboardComponent (adaptado por rol)
+│           │   ├── courses/          # CourseListComponent, CourseFormDialogComponent, CourseDetailComponent, StudentCourseViewComponent, CourseHistoryComponent
+│           │   ├── teachers/         # TeacherListComponent
+│           │   ├── students/         # StudentListComponent (incluye matrícula/retiro de cursos)
+│           │   ├── staff/            # StaffListComponent
+│           │   ├── agenda/           # TeacherAgendaComponent (gestión docente / lectura alumno)
+│           │   └── reports/          # ReportsComponent (admin y docente, exportación CSV/PDF)
 │           └── shared/
-│               ├── components/   # MainLayoutComponent, ConfirmDialogComponent, UnauthorizedComponent, NotFoundComponent
-│               ├── directives/   # HasRoleDirective (*appHasRole), HighlightStatusDirective ([appHighlightStatus])
-│               └── pipes/        # CourseStatusPipe (courseStatus), RoleLabelPipe (roleLabel)
+│               ├── components/       # MainLayoutComponent, ConfirmDialogComponent, ToastContainerComponent, UnauthorizedComponent, NotFoundComponent
+│               ├── directives/       # HasRoleDirective (*appHasRole), HighlightStatusDirective ([appHighlightStatus])
+│               └── pipes/            # CourseStatusPipe (courseStatus), RoleLabelPipe (roleLabel)
 └── README.md
 ```
 
 ---
 
-## Puntos Clave de la Rúbrica Implementados
+## Cumplimiento de la Rúbrica
 
-- **Lazy Loading por feature**: `auth.routes.ts`, `dashboard.routes.ts`, `courses.routes.ts`, `users.routes.ts` y `reports.routes.ts` cargados bajo demanda mediante `loadChildren`.
-- **3 Functional Guards (`CanActivateFn`)**:
-  - `authGuard`: protege las rutas internas bajo `MainLayoutComponent` redirigiendo a `/login` si no hay sesión válida.
-  - `loginGuard`: evita que un usuario autenticado vuelva a `/login`, redirigiéndolo a `/dashboard`.
-  - `roleGuard`: valida los roles declarados en `route.data['roles']` y redirige a `/unauthorized` si el rol no tiene permiso.
-- **2 Interceptores HTTP Funcionales (`HttpInterceptorFn`)**:
-  - `authInterceptor`: valida expiración del JWT antes de enviar la petición y adjunta `Authorization: Bearer <token>`.
-  - `errorInterceptor`: intercepta respuestas `401` (cierra sesión y notifica), `403` (redirige a `/unauthorized`) y otros errores HTTP mediante `MatSnackBar`.
-- **Pipes Personalizados**:
-  - `CourseStatusPipe` (`courseStatus`): traduce `'active' | 'draft' | 'inactive'` a `'Activo' | 'Borrador' | 'Inactivo'`.
-  - `RoleLabelPipe` (`roleLabel`): traduce `'admin' | 'profesor' | 'estudiante'` a `'Administrador' | 'Profesor' | 'Estudiante'`.
-- **Directivas Personalizadas**:
-  - `HasRoleDirective` (`*appHasRole`): directiva estructural reactiva a `AuthService.currentUser$` para mostrar u ocultar elementos según rol.
-  - `HighlightStatusDirective` (`[appHighlightStatus]`): directiva de atributo que aplica estilos tipo badge según el estado del curso.
-- **Formularios Reactivos Avanzados**:
-  - `CourseFormDialogComponent`: uso de `FormArray` dinámico para módulos del curso y validador asíncrono de código único (`GET /api/courses/check-code`).
-  - `UserFormDialogComponent`: validador asíncrono de correo único (`GET /api/users/check-email`) y contraseña condicional en creación/edición.
+- **Rutas y Lazy Loading**: módulos cargados bajo demanda (`auth`, `dashboard`, `courses`, `teachers`, `students`, `staff`, `agenda`, `reports`), rutas parametrizadas (`/courses/:id`, `/courses/:id/view`), redirecciones y ruta comodín `404` (`NotFoundComponent`).
+- **Guards (`CanActivateFn`)**: `authGuard`, `loginGuard` y `roleGuard` con redirección a `/login`, `/dashboard` o `/unauthorized` según sesión y rol.
+- **Interceptores (`HttpInterceptorFn`)**: `authInterceptor` (verifica expiración e inserta `Authorization: Bearer <token>`) y `errorInterceptor` (manejo global de `401`, `403` y errores HTTP con `ToastService`).
+- **API REST con `HttpClient`**: operaciones `GET`, `POST`, `PUT` y `DELETE` separadas por entidad con `Observables` y `catchError`.
+- **Pipes y Directivas personalizadas**: `courseStatus`, `roleLabel`, `*appHasRole` y `[appHighlightStatus]`.

@@ -1,44 +1,85 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { EnrollmentHistory } from '../../../core/models/enrollment.model';
+import { AuthService } from '../../../core/services/auth.service';
 import { CourseService } from '../../../core/services/course.service';
 
 @Component({
   selector: 'app-course-history',
   standalone: true,
-  imports: [DecimalPipe, RouterLink],
+  imports: [DecimalPipe, FormsModule, RouterLink],
   template: `
     <div class="d-flex flex-column gap-4">
       <header class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-          <h1 class="h3 fw-bold mb-1">Historial Académico</h1>
-          <p class="text-muted small mb-0">Registro de cursos y calificaciones de ciclos pasados</p>
+          <h1 class="h3 fw-bold mb-1">Historial y Boleta de Notas</h1>
+          <p class="text-muted small mb-0">
+            @if (currentUser(); as u) {
+              <span class="fw-semibold text-dark">{{ u.user_code || '#' + u.id }}</span> &middot;
+              {{ u.name }}
+              @if (u.career) {
+                &middot; {{ u.career }}
+              }
+            } @else {
+              Registro de cursos y calificaciones de ciclos pasados
+            }
+          </p>
         </div>
 
-        <a class="btn btn-outline-primary bg-white bg-opacity-50 btn-sm" routerLink="/courses">
-          <i class="bi bi-arrow-left me-1"></i>Volver a Cursos
-        </a>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-light border btn-sm" routerLink="/courses">
+            <i class="bi bi-arrow-left me-1"></i>Mis Cursos
+          </a>
+
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-sm"
+            [disabled]="filteredHistory().length === 0"
+            (click)="exportCsv()"
+          >
+            <i class="bi bi-filetype-csv me-1"></i>Exportar CSV
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-ink btn-sm px-3"
+            [disabled]="filteredHistory().length === 0"
+            (click)="printBoleta()"
+          >
+            <i class="bi bi-printer me-1"></i>Boleta PDF
+          </button>
+        </div>
       </header>
 
       <div class="row g-3">
-        <div class="col-12 col-sm-4">
-          <div class="glass-card p-3 p-md-4">
-            <div class="text-muted small fw-semibold">Cursos en historial</div>
-            <div class="fs-2 fw-bold text-primary tabular-nums mt-1">{{ history().length }}</div>
+        <div class="col-6 col-xl-3">
+          <div class="elevated-card p-3 p-md-4 h-100">
+            <div class="text-muted small fw-semibold">Cursos cursados</div>
+            <div class="fs-2 fw-bold text-primary tabular-nums mt-1">
+              {{ filteredHistory().length }}
+            </div>
           </div>
         </div>
 
-        <div class="col-12 col-sm-4">
-          <div class="glass-card p-3 p-md-4">
+        <div class="col-6 col-xl-3">
+          <div class="elevated-card p-3 p-md-4 h-100">
             <div class="text-muted small fw-semibold">Aprobados</div>
             <div class="fs-2 fw-bold text-success tabular-nums mt-1">{{ approvedCount() }}</div>
           </div>
         </div>
 
-        <div class="col-12 col-sm-4">
-          <div class="glass-card p-3 p-md-4">
-            <div class="text-muted small fw-semibold">Promedio</div>
+        <div class="col-6 col-xl-3">
+          <div class="elevated-card p-3 p-md-4 h-100">
+            <div class="text-muted small fw-semibold">Créditos aprobados</div>
+            <div class="fs-2 fw-bold tabular-nums mt-1">{{ approvedCredits() }}</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+          <div class="elevated-card p-3 p-md-4 h-100">
+            <div class="text-muted small fw-semibold">Promedio ponderado</div>
             <div class="fs-2 fw-bold text-primary tabular-nums mt-1">
               @if (averageGrade() !== null) {
                 {{ averageGrade() | number: '1.2-2' }}
@@ -51,6 +92,28 @@ import { CourseService } from '../../../core/services/course.service';
       </div>
 
       <div class="glass-card p-3 p-md-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+          <div class="d-flex align-items-center gap-2">
+            <label for="cycleFilterSelect" class="small fw-semibold text-muted">Ciclo:</label>
+            <select
+              id="cycleFilterSelect"
+              class="form-select form-select-sm"
+              style="width: auto;"
+              [ngModel]="cycleFilter()"
+              (ngModelChange)="cycleFilter.set($event)"
+            >
+              <option value="all">Todos los ciclos</option>
+              @for (cycle of availableCycles(); track cycle) {
+                <option [value]="cycle">{{ cycle }}</option>
+              }
+            </select>
+          </div>
+
+          <span class="small text-muted fw-semibold">
+            {{ filteredHistory().length }} registro(s)
+          </span>
+        </div>
+
         @if (loading()) {
           <div class="text-center py-5 text-muted">
             <div class="spinner-border text-primary mb-2" role="status"></div>
@@ -66,7 +129,7 @@ import { CourseService } from '../../../core/services/course.service';
               Reintentar
             </button>
           </div>
-        } @else if (history().length === 0) {
+        } @else if (filteredHistory().length === 0) {
           <div class="text-center py-5 text-muted">
             <i class="bi bi-award fs-1 d-block mb-2 opacity-50"></i>
             <p class="mb-0">No cuentas con registros en tu historial de notas.</p>
@@ -79,17 +142,19 @@ import { CourseService } from '../../../core/services/course.service';
                   <th>Ciclo</th>
                   <th>Código</th>
                   <th>Curso</th>
+                  <th>Docente</th>
                   <th>Créditos</th>
                   <th>Nota Final</th>
                   <th>Estado</th>
                 </tr>
               </thead>
               <tbody>
-                @for (item of history(); track item.id) {
+                @for (item of filteredHistory(); track item.id) {
                   <tr>
                     <td><span class="fw-semibold">{{ item.cycle }}</span></td>
                     <td><strong>{{ item.course_code }}</strong></td>
                     <td>{{ item.course_title }}</td>
+                    <td class="small text-muted">{{ item.teacher_name || '—' }}</td>
                     <td class="tabular-nums">{{ item.credits }}</td>
                     <td class="tabular-nums">
                       @if (item.final_grade !== null) {
@@ -149,24 +214,53 @@ import { CourseService } from '../../../core/services/course.service';
 })
 export class CourseHistoryComponent implements OnInit {
   private readonly courseService = inject(CourseService);
+  private readonly authService = inject(AuthService);
 
+  readonly currentUser = signal(this.authService.getCurrentUser());
   readonly history = signal<EnrollmentHistory[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
+  readonly cycleFilter = signal<string>('all');
+
+  readonly availableCycles = computed(() =>
+    Array.from(new Set(this.history().map((h) => h.cycle))).sort().reverse(),
+  );
+
+  readonly filteredHistory = computed(() => {
+    const cycle = this.cycleFilter();
+    if (cycle === 'all') {
+      return this.history();
+    }
+    return this.history().filter((item) => item.cycle === cycle);
+  });
 
   readonly approvedCount = computed(
     () =>
-      this.history().filter((item) => item.final_grade !== null && item.final_grade >= 13)
+      this.filteredHistory().filter((item) => item.final_grade !== null && item.final_grade >= 13)
         .length,
   );
 
+  readonly approvedCredits = computed(() =>
+    this.filteredHistory()
+      .filter((item) => item.final_grade !== null && item.final_grade >= 13)
+      .reduce((acc, item) => acc + item.credits, 0),
+  );
+
   readonly averageGrade = computed(() => {
-    const graded = this.history().filter((item) => item.final_grade !== null);
+    const graded = this.filteredHistory().filter((item) => item.final_grade !== null);
     if (graded.length === 0) {
       return null;
     }
-    const sum = graded.reduce((acc, item) => acc + (item.final_grade ?? 0), 0);
-    return sum / graded.length;
+    const totalCredits = graded.reduce((acc, item) => acc + item.credits, 0);
+    if (totalCredits === 0) {
+      const sum = graded.reduce((acc, item) => acc + (item.final_grade ?? 0), 0);
+      return sum / graded.length;
+    }
+    const weighted = graded.reduce(
+      (acc, item) => acc + (item.final_grade ?? 0) * item.credits,
+      0,
+    );
+    return weighted / totalCredits;
   });
 
   ngOnInit(): void {
@@ -186,5 +280,38 @@ export class CourseHistoryComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  exportCsv(): void {
+    const rows = this.filteredHistory();
+    if (rows.length === 0) {
+      return;
+    }
+    const header = ['Ciclo', 'Codigo', 'Curso', 'Docente', 'Creditos', 'Nota', 'Estado'];
+    const lines = [
+      header.join(','),
+      ...rows.map((r) =>
+        [
+          `"${r.cycle}"`,
+          `"${r.course_code}"`,
+          `"${r.course_title.replace(/"/g, '""')}"`,
+          `"${(r.teacher_name ?? '').replace(/"/g, '""')}"`,
+          r.credits,
+          r.final_grade ?? '',
+          r.final_grade === null ? 'En curso' : r.final_grade >= 13 ? 'Aprobado' : 'Desaprobado',
+        ].join(','),
+      ),
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'boleta-notas-zegel.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  printBoleta(): void {
+    window.print();
   }
 }

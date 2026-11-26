@@ -29,7 +29,7 @@ import { UserFormDialogComponent } from '../user-form-dialog/user-form-dialog.co
 
         <button
           type="button"
-          class="btn btn-primary btn-sm px-3"
+          class="btn btn-ink btn-sm px-3"
           (click)="openCreateDialog()"
         >
           <i class="bi bi-person-plus-fill me-1"></i>Nuevo Usuario

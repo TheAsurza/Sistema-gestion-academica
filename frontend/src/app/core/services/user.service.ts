@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, map, Observable, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User, UserPayload } from '../models/user.model';
+import { StaffRow, StudentActiveCourse, StudentRow, TeacherRow, User, UserPayload } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +19,44 @@ export class UserService {
       tap((users) => this.usersSubject.next(users)),
       catchError((error) => throwError(() => error)),
     );
+  }
+
+  getTeachers(): Observable<TeacherRow[]> {
+    return this.http
+      .get<TeacherRow[]>(`${this.apiUrl}/teachers`)
+      .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  getStudents(): Observable<StudentRow[]> {
+    return this.http
+      .get<StudentRow[]>(`${this.apiUrl}/students`)
+      .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  getStaff(): Observable<StaffRow[]> {
+    return this.http
+      .get<StaffRow[]>(`${this.apiUrl}/staff`)
+      .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  enrollStudent(
+    studentId: number,
+    courseId: number,
+    cycle = '2026-II',
+  ): Observable<StudentActiveCourse> {
+    return this.http
+      .post<StudentActiveCourse>(`${this.apiUrl}/enrollments`, {
+        student_id: studentId,
+        course_id: courseId,
+        cycle,
+      })
+      .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  unenrollStudent(enrollmentId: number): Observable<void> {
+    return this.http
+      .delete<void>(`${this.apiUrl}/enrollments/${enrollmentId}`)
+      .pipe(catchError((error) => throwError(() => error)));
   }
 
   createUser(payload: UserPayload): Observable<User> {

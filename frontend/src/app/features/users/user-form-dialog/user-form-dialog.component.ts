@@ -71,13 +71,46 @@ import { UserService } from '../../../core/services/user.service';
             }
           </div>
 
+          <div class="row g-2">
+            <div class="col-12 col-sm-6">
+              <label class="form-label small fw-semibold">Rol</label>
+              <select class="form-select" formControlName="role">
+                <option value="admin">Administrador</option>
+                <option value="profesor">Profesor</option>
+                <option value="estudiante">Estudiante</option>
+              </select>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label small fw-semibold">Teléfono</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="phone"
+                placeholder="Ej. 987-654-321"
+              />
+            </div>
+          </div>
+
+          @if (form.controls.role.value === 'estudiante') {
+            <div>
+              <label class="form-label small fw-semibold">Carrera</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="career"
+                placeholder="Ej. Desarrollo de Sistemas de Información"
+              />
+            </div>
+          }
+
           <div>
-            <label class="form-label small fw-semibold">Rol</label>
-            <select class="form-select" formControlName="role">
-              <option value="admin">Administrador</option>
-              <option value="profesor">Profesor</option>
-              <option value="estudiante">Estudiante</option>
-            </select>
+            <label class="form-label small fw-semibold">Dirección</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="address"
+              placeholder="Ej. Av. Arequipa 1250, Lima"
+            />
           </div>
 
           <div>
@@ -130,6 +163,7 @@ export class UserFormDialogComponent implements OnInit {
   private readonly userService = inject(UserService);
 
   @Input() user: User | null = null;
+  @Input() defaultRole: UserRole = 'estudiante';
   @Output() saved = new EventEmitter<UserPayload>();
   @Output() cancelled = new EventEmitter<void>();
 
@@ -149,6 +183,9 @@ export class UserFormDialogComponent implements OnInit {
       [this.emailAvailableValidator()],
     ],
     role: ['estudiante' as UserRole, [Validators.required]],
+    career: [''],
+    phone: [''],
+    address: [''],
     password: [''],
   });
 
@@ -169,8 +206,13 @@ export class UserFormDialogComponent implements OnInit {
         name: this.user.name,
         email: this.user.email,
         role: this.user.role,
+        career: this.user.career ?? '',
+        phone: this.user.phone ?? '',
+        address: this.user.address ?? '',
         password: '',
       });
+    } else {
+      this.form.patchValue({ role: this.defaultRole });
     }
   }
 
@@ -185,6 +227,9 @@ export class UserFormDialogComponent implements OnInit {
       name: raw.name.trim(),
       email: raw.email.trim().toLowerCase(),
       role: raw.role,
+      career: raw.role === 'estudiante' ? raw.career.trim() || null : null,
+      phone: raw.phone.trim() || null,
+      address: raw.address.trim() || null,
     };
 
     const password = raw.password.trim();

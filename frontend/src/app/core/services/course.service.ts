@@ -2,7 +2,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, map, Observable, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Course, CoursePayload } from '../models/course.model';
+import {
+  AttendanceStatus,
+  Course,
+  CourseAttendanceResponse,
+  CourseDetail,
+  CoursePayload,
+  StudentCourseView,
+} from '../models/course.model';
 import { EnrollmentHistory } from '../models/enrollment.model';
 
 @Injectable({
@@ -66,6 +73,51 @@ export class CourseService {
   getStudentHistory(): Observable<EnrollmentHistory[]> {
     return this.http
       .get<EnrollmentHistory[]>(`${this.apiUrl}/enrollments/history`)
+      .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  getStudentCourseView(courseId: number): Observable<StudentCourseView> {
+    return this.http
+      .get<StudentCourseView>(`${this.apiUrl}/courses/${courseId}/my-view`)
+      .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  getCourseDetail(courseId: number): Observable<CourseDetail> {
+    return this.http
+      .get<CourseDetail>(`${this.apiUrl}/courses/${courseId}`)
+      .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  updateEnrollmentGrade(
+    enrollmentId: number,
+    finalGrade: number | null,
+    status: 'enrolled' | 'completed',
+  ): Observable<{ enrollment_id: number; final_grade: number | null; status: 'enrolled' | 'completed' }> {
+    return this.http
+      .put<{ enrollment_id: number; final_grade: number | null; status: 'enrolled' | 'completed' }>(
+        `${this.apiUrl}/enrollments/${enrollmentId}/grade`,
+        { final_grade: finalGrade, status },
+      )
+      .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  getCourseAttendance(courseId: number, date: string): Observable<CourseAttendanceResponse> {
+    const params = new HttpParams().set('date', date);
+    return this.http
+      .get<CourseAttendanceResponse>(`${this.apiUrl}/courses/${courseId}/attendance`, { params })
+      .pipe(catchError((error) => throwError(() => error)));
+  }
+
+  saveCourseAttendance(
+    courseId: number,
+    date: string,
+    records: { student_id: number; status: AttendanceStatus }[],
+  ): Observable<{ message: string; date: string }> {
+    return this.http
+      .put<{ message: string; date: string }>(`${this.apiUrl}/courses/${courseId}/attendance`, {
+        date,
+        records,
+      })
       .pipe(catchError((error) => throwError(() => error)));
   }
 }

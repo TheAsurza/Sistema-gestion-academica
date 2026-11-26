@@ -34,14 +34,41 @@ export const routes: Routes = [
       },
       {
         path: 'users',
+        redirectTo: 'students',
+        pathMatch: 'full',
+      },
+      {
+        path: 'teachers',
         canActivate: [roleGuard],
         data: { roles: ['admin'] },
-        loadChildren: () => import('./features/users/users.routes').then((m) => m.USERS_ROUTES),
+        loadChildren: () =>
+          import('./features/teachers/teachers.routes').then((m) => m.TEACHERS_ROUTES),
+      },
+      {
+        path: 'students',
+        canActivate: [roleGuard],
+        data: { roles: ['admin'] },
+        loadChildren: () =>
+          import('./features/students/students.routes').then((m) => m.STUDENTS_ROUTES),
+      },
+      {
+        path: 'staff',
+        canActivate: [roleGuard],
+        data: { roles: ['admin'] },
+        loadChildren: () =>
+          import('./features/staff/staff.routes').then((m) => m.STAFF_ROUTES),
+      },
+      {
+        path: 'agenda',
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'profesor', 'estudiante'] },
+        loadChildren: () =>
+          import('./features/agenda/agenda.routes').then((m) => m.AGENDA_ROUTES),
       },
       {
         path: 'reports',
         canActivate: [roleGuard],
-        data: { roles: ['admin'] },
+        data: { roles: ['admin', 'profesor'] },
         loadChildren: () =>
           import('./features/reports/reports.routes').then((m) => m.REPORTS_ROUTES),
       },

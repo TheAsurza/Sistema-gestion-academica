@@ -5,45 +5,41 @@
   --zegel-font: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --bs-body-font-family: var(--zegel-font);
 
-  --zegel-primary: #2563eb;
-  --zegel-primary-dark: #1d4ed8;
-  --zegel-primary-soft: rgba(37, 99, 235, 0.12);
-  --zegel-primary-border: rgba(37, 99, 235, 0.25);
+  /* Reference Soft-Bento & Violet Rail Palette */
+  --zegel-primary: #6c63ff;
+  --zegel-primary-dark: #5548e5;
+  --zegel-primary-soft: #eef0ff;
+  --zegel-primary-border: #d5d7f7;
+  --zegel-ink: #141526;
+  --zegel-text: #181826;
+  --zegel-muted: #6e7191;
+  --zegel-border: #eceef6;
 
-  --zegel-bg:
-    radial-gradient(circle at 12% 18%, rgba(59, 130, 246, 0.24) 0%, transparent 42%),
-    radial-gradient(circle at 88% 12%, rgba(99, 102, 241, 0.22) 0%, transparent 40%),
-    radial-gradient(circle at 75% 88%, rgba(14, 165, 233, 0.18) 0%, transparent 44%),
-    linear-gradient(135deg, #dbeafe 0%, #e0e7ff 50%, #e2e8f0 100%);
+  --zegel-outer-bg: linear-gradient(135deg, #e5e8f6 0%, #edeff9 55%, #e2e5f3 100%);
+  --zegel-shell-bg: #ffffff;
+  --zegel-bento-bg: #f7f8fc;
+  --zegel-card-bg: #ffffff;
+  --zegel-card-shadow: 0 10px 28px rgba(20, 21, 38, 0.055);
+  --zegel-card-shadow-sm: 0 4px 14px rgba(20, 21, 38, 0.04);
 
-  --zegel-glass-bg: rgba(255, 255, 255, 0.72);
-  --zegel-glass-bg-strong: rgba(255, 255, 255, 0.88);
-  --zegel-glass-border: rgba(255, 255, 255, 0.65);
-  --zegel-glass-shadow:
-    0 12px 32px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65);
-
-  --zegel-text: #0f172a;
-  --zegel-muted: #475569;
-  --zegel-border: rgba(148, 163, 184, 0.28);
-
+  /* Semantic Pastel Pills */
   --zegel-success: #047857;
-  --zegel-success-soft: rgba(16, 185, 129, 0.14);
-  --zegel-success-border: rgba(16, 185, 129, 0.35);
+  --zegel-success-soft: #d1fae5;
+  --zegel-success-border: #a7f3d0;
   --zegel-warning: #b45309;
-  --zegel-warning-soft: rgba(245, 158, 11, 0.14);
-  --zegel-warning-border: rgba(245, 158, 11, 0.35);
-  --zegel-error: #b91c1c;
-  --zegel-error-soft: rgba(239, 68, 68, 0.12);
-  --zegel-error-border: rgba(239, 68, 68, 0.35);
+  --zegel-warning-soft: #fef3c7;
+  --zegel-warning-border: #fde68a;
+  --zegel-error: #be123c;
+  --zegel-error-soft: #ffe4e6;
+  --zegel-error-border: #fecdd3;
   --zegel-indigo: #5b21b6;
-  --zegel-indigo-soft: rgba(139, 92, 246, 0.14);
-  --zegel-indigo-border: rgba(139, 92, 246, 0.32);
-  --zegel-neutral-soft: rgba(148, 163, 184, 0.14);
-  --zegel-neutral-border: rgba(148, 163, 184, 0.32);
+  --zegel-indigo-soft: #ede9fe;
+  --zegel-indigo-border: #ddd6fe;
+  --zegel-neutral-soft: #f1f2f8;
+  --zegel-neutral-border: #e2e4f0;
 
-  --zegel-radius: 16px;
-  --zegel-radius-sm: 12px;
+  --zegel-radius: 22px;
+  --zegel-radius-sm: 14px;
   --zegel-radius-pill: 9999px;
 }
 
@@ -55,7 +51,7 @@ body {
 body {
   margin: 0;
   font-family: var(--zegel-font);
-  background: var(--zegel-bg);
+  background: var(--zegel-outer-bg);
   background-attachment: fixed;
   color: var(--zegel-text);
   caret-color: var(--zegel-primary);
@@ -63,8 +59,8 @@ body {
 }
 
 ::selection {
-  background-color: rgba(37, 99, 235, 0.22);
-  color: var(--zegel-text);
+  background-color: rgba(108, 99, 255, 0.18);
+  color: var(--zegel-ink);
 }
 
 ::-webkit-scrollbar {
@@ -73,16 +69,12 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(148, 163, 184, 0.14);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: rgba(110, 113, 145, 0.3);
   border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 0.6);
 }
 
 button:focus-visible,
@@ -99,20 +91,53 @@ select:focus-visible,
   font-variant-numeric: tabular-nums;
 }
 
-.glass-card {
-  background: var(--zegel-glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--zegel-glass-border);
+/* Bento container & elevated inner card */
+.glass-card,
+.bento-panel {
+  background: var(--zegel-bento-bg);
+  border: 1px solid var(--zegel-border);
   border-radius: var(--zegel-radius);
-  box-shadow: var(--zegel-glass-shadow);
 }
 
+.elevated-card {
+  background: var(--zegel-card-bg);
+  border: 1px solid rgba(236, 238, 246, 0.9);
+  border-radius: 18px;
+  box-shadow: var(--zegel-card-shadow);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.elevated-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(20, 21, 38, 0.08);
+}
+
+.accent-violet-card {
+  background: linear-gradient(155deg, #746bff 0%, #5b52f0 100%);
+  color: #ffffff;
+  border-radius: var(--zegel-radius);
+  box-shadow: 0 14px 30px rgba(108, 99, 255, 0.28);
+}
+
+.dashed-action-tile {
+  background: #f3f4fc;
+  border: 2px dashed #c8cbf0;
+  border-radius: 18px;
+  transition: border-color 150ms ease, background-color 150ms ease;
+  cursor: pointer;
+}
+
+.dashed-action-tile:hover {
+  background: #eceeff;
+  border-color: var(--zegel-primary);
+}
+
+/* Modals */
 .glass-modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 1050;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(20, 21, 38, 0.42);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -123,55 +148,84 @@ select:focus-visible,
 
 .glass-modal {
   width: 100%;
-  background: var(--zegel-glass-bg-strong);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 18px;
-  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.2);
+  background: #ffffff;
+  border: 1px solid var(--zegel-border);
+  border-radius: 22px;
+  box-shadow: 0 24px 56px rgba(20, 21, 38, 0.18);
 }
 
+/* Tables */
 .table.glass-table {
-  --bs-table-bg: transparent;
-  --bs-table-hover-bg: rgba(255, 255, 255, 0.55);
+  --bs-table-bg: #ffffff;
+  --bs-table-hover-bg: #f8f9fd;
   margin-bottom: 0;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .table.glass-table thead th {
-  background: rgba(241, 245, 249, 0.72);
+  background: #f4f5fa;
   color: var(--zegel-muted);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   border-bottom: 1px solid var(--zegel-border);
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1rem;
 }
 
 .table.glass-table tbody td {
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1rem;
   vertical-align: middle;
   border-bottom-color: var(--zegel-border);
   color: var(--zegel-text);
 }
 
+/* Forms & Buttons */
 .form-control,
 .form-select {
-  border-radius: 10px;
-  border-color: var(--zegel-border);
-  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  border-color: #e2e4f0;
+  background-color: #ffffff;
 }
 
 .form-control:focus,
 .form-select:focus {
   border-color: var(--zegel-primary);
-  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.18);
-  background-color: #ffffff;
+  box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.18);
 }
 
 .btn {
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 600;
+}
+
+.btn-primary {
+  background-color: var(--zegel-primary);
+  border-color: var(--zegel-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--zegel-primary-dark);
+  border-color: var(--zegel-primary-dark);
+}
+
+.btn-ink {
+  background-color: var(--zegel-ink);
+  border-color: var(--zegel-ink);
+  color: #ffffff;
+  border-radius: 9999px;
+}
+
+.btn-ink:hover {
+  background-color: #252742;
+  border-color: #252742;
+  color: #ffffff;
+}
+
+.text-primary {
+  color: var(--zegel-primary) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

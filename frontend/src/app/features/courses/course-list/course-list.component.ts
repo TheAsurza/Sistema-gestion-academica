@@ -42,7 +42,7 @@ import { CourseFormDialogComponent } from '../course-form-dialog/course-form-dia
           <button
             *appHasRole="['admin']"
             type="button"
-            class="btn btn-primary btn-sm px-3"
+            class="btn btn-ink btn-sm px-3"
             (click)="openCreateDialog()"
           >
             <i class="bi bi-plus-lg me-1"></i>Nuevo Curso
@@ -75,17 +75,31 @@ import { CourseFormDialogComponent } from '../course-form-dialog/course-form-dia
             }
           </div>
 
-          <div class="d-flex flex-wrap gap-2" role="group" aria-label="Filtrar por estado">
-            @for (opt of statusFilterOptions; track opt.value) {
-              <button
-                type="button"
-                class="filter-pill"
-                [class.active]="statusFilter() === opt.value"
-                (click)="statusFilter.set(opt.value)"
-              >
-                {{ opt.label }}
-              </button>
-            }
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <select
+              class="form-select form-select-sm career-select"
+              aria-label="Filtrar por carrera"
+              [ngModel]="careerFilter()"
+              (ngModelChange)="careerFilter.set($event)"
+            >
+              <option value="all">Todas las carreras</option>
+              @for (career of availableCareers(); track career) {
+                <option [value]="career">{{ career }}</option>
+              }
+            </select>
+
+            <div class="d-flex flex-wrap gap-2" role="group" aria-label="Filtrar por estado">
+              @for (opt of statusFilterOptions; track opt.value) {
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="statusFilter() === opt.value"
+                  (click)="statusFilter.set(opt.value)"
+                >
+                  {{ opt.label }}
+                </button>
+              }
+            </div>
           </div>
         </div>
 
@@ -115,7 +129,7 @@ import { CourseFormDialogComponent } from '../course-form-dialog/course-form-dia
               <thead>
                 <tr>
                   <th>Código</th>
-                  <th>Título</th>
+                  <th>Curso / Carrera</th>
                   <th>Créditos</th>
                   <th>Profesor</th>
                   <th>Estado</th>
@@ -127,7 +141,10 @@ import { CourseFormDialogComponent } from '../course-form-dialog/course-form-dia
                 @for (course of filteredCourses(); track course.id) {
                   <tr>
                     <td><strong>{{ course.code }}</strong></td>
-                    <td>{{ course.title }}</td>
+                    <td>
+                      <div class="fw-semibold">{{ course.title }}</div>
+                      <div class="small text-muted">{{ course.career }}</div>
+                    </td>
                     <td class="tabular-nums">{{ course.credits }}</td>
                     <td>{{ course.teacher_name || 'Sin asignar' }}</td>
                     <td>
@@ -137,6 +154,26 @@ import { CourseFormDialogComponent } from '../course-form-dialog/course-form-dia
                     </td>
                     <td class="tabular-nums">{{ course.modules.length }}</td>
                     <td class="text-end text-nowrap">
+                      <a
+                        *appHasRole="['estudiante']"
+                        class="btn btn-sm btn-outline-primary me-1"
+                        [routerLink]="['/courses', course.id, 'view']"
+                        title="Ver sílabo y mi asistencia"
+                        aria-label="Ver sílabo y mi asistencia"
+                      >
+                        <i class="bi bi-calendar2-check me-1"></i>Detalle
+                      </a>
+
+                      <a
+                        *appHasRole="['admin', 'profesor']"
+                        class="btn btn-sm btn-outline-primary me-1"
+                        [routerLink]="['/courses', course.id]"
+                        title="Alumnos, Notas y Asistencia"
+                        aria-label="Gestionar alumnos, notas y asistencia"
+                      >
+                        <i class="bi bi-people-fill"></i>
+                      </a>
+
                       <button
                         type="button"
                         class="btn btn-sm btn-outline-secondary me-1"
@@ -258,6 +295,11 @@ import { CourseFormDialogComponent } from '../course-form-dialog/course-form-dia
         max-width: 340px;
       }
 
+      .career-select {
+        width: auto;
+        min-width: 210px;
+      }
+
       .filter-pill {
         border: 1px solid var(--zegel-border);
         background: rgba(255, 255, 255, 0.72);
@@ -295,7 +337,12 @@ export class CourseListComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly searchTerm = signal('');
+  readonly careerFilter = signal<string>('all');
   readonly statusFilter = signal<'all' | 'active' | 'draft' | 'inactive'>('all');
+
+  readonly availableCareers = computed(() =>
+    Array.from(new Set(this.courses().map((c) => c.career).filter(Boolean))).sort(),
+  );
 
   readonly detailCourse = signal<Course | null>(null);
   readonly formModalOpen = signal(false);
@@ -315,13 +362,16 @@ export class CourseListComponent implements OnInit {
   readonly filteredCourses = computed(() => {
     const query = this.searchTerm().trim().toLowerCase();
     const status = this.statusFilter();
+    const career = this.careerFilter();
     return this.courses().filter((course) => {
       const matchesStatus = status === 'all' || course.status === status;
+      const matchesCareer = career === 'all' || course.career === career;
       const matchesQuery =
         !query ||
         course.code.toLowerCase().includes(query) ||
-        course.title.toLowerCase().includes(query);
-      return matchesStatus && matchesQuery;
+        course.title.toLowerCase().includes(query) ||
+        course.career.toLowerCase().includes(query);
+      return matchesStatus && matchesCareer && matchesQuery;
     });
   });
 
