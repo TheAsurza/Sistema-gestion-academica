@@ -7,7 +7,7 @@
 
 ## 1. Enlace de GitHub del Proyecto
 
-- **Repositorio GitHub:** *(Enlace del repositorio GitHub del equipo)*
+- **Repositorio GitHub:** https://github.com/TheAsurza/Sistema-gestion-academica.git
 - **Instrucciones de instalación y ejecución:** Documentadas en [`README.md`](../README.md), con guía paso a paso para importar `backend/database.sql`, configurar `backend/config/database.php`, levantar la API PHP (`php -S localhost:8000 -t backend`) y ejecutar el frontend Angular (`npm start`).
 
 ---
